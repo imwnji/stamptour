@@ -98,11 +98,11 @@ export function plaqueTexture(store, iconImg) {
   cv.width = 512
   cv.height = 360
   const c = cv.getContext('2d')
-  c.fillStyle = '#8a6250'
+  c.fillStyle = '#9A775E'
   c.beginPath()
   c.roundRect(0, 0, 512, 360, 90)
   c.fill()
-  c.fillStyle = '#f7ecdc'
+  c.fillStyle = '#F7F3EA'
   c.beginPath()
   c.roundRect(18, 18, 476, 324, 74)
   c.fill()
@@ -114,7 +114,7 @@ export function plaqueTexture(store, iconImg) {
   c.stroke()
   c.setLineDash([])
   if (iconImg) c.drawImage(iconImg, 256 - 85, 44, 170, 170)
-  c.fillStyle = '#7a5444'
+  c.fillStyle = '#7E5F4A'
   let size = 66
   c.font = `700 ${size}px Gaegu, sans-serif`
   while (c.measureText(store.sign).width > 420 && size > 34) {
@@ -209,7 +209,7 @@ export function checkTexture() {
   const c = cv.getContext('2d')
   for (let y = 0; y < 8; y++)
     for (let x = 0; x < 8; x++) {
-      c.fillStyle = (x + y) % 2 ? '#f6dede' : '#d9737c'
+      c.fillStyle = (x + y) % 2 ? '#F4F1E8' : '#C77E68'
       c.fillRect(x * 8, y * 8, 8, 8)
     }
   const t = new THREE.CanvasTexture(cv)

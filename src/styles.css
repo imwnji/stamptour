@@ -11,7 +11,7 @@
 }
 
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-html, body, #root { margin: 0; height: 100%; overflow: hidden; background: #f1e3e2; }
+html, body, #root { margin: 0; height: 100%; overflow: hidden; background: #BFD7DE; }
 body { font-family: var(--body); color: var(--ink2); overscroll-behavior: none; }
 button { font: inherit; color: inherit; border: 0; background: none; cursor: pointer; padding: 0; }
 .hand { font-family: var(--hand); }
@@ -19,7 +19,7 @@ button { font: inherit; color: inherit; border: 0; background: none; cursor: poi
 .app { position: fixed; inset: 0; overflow: hidden; }
 .scene { position: absolute; inset: 0; touch-action: none; }
 .haze { position: absolute; left: 0; right: 0; top: 0; height: 26%; pointer-events: none;
-  background: linear-gradient(#f1e3e2 0%, rgba(241,227,226,.75) 30%, rgba(241,227,226,0) 100%); }
+  background: linear-gradient(#BFD7DE 0%, rgba(191,215,222,.7) 30%, rgba(191,215,222,0) 100%); }
 
 .paper {
   background-color: var(--paper);

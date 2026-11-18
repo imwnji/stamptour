@@ -12,13 +12,14 @@ import { stampUrl, motifUrl, loadImage } from '../lib/stampSvg.js'
 import { useApp } from '../store.js'
 import { PottedTree, Bush } from './Decor.jsx'
 import { BUILD_SCALE } from '../data/layout.js'
+import { PAL } from './palette.js'
 
 const Mat = ({ color, ...p }) => (
-  <meshStandardMaterial color={color} roughness={0.85} {...(color === '#ffffff' ? { emissive: '#fff3f2', emissiveIntensity: 0.3 } : {})} {...p} />
+  <meshStandardMaterial color={color} roughness={0.85} {...(color === SNOW ? { emissive: SNOW, emissiveIntensity: 0.32 } : {})} {...p} />
 )
-const SNOW = '#ffffff'
-const WOOD = '#8a6250'
-const WARM = { color: '#ffe2ae', emissive: '#ffbf66', emissiveIntensity: 1.0 }
+const SNOW = PAL.snow
+const WOOD = PAL.wood
+const WARM = { color: PAL.glow, emissive: PAL.glow, emissiveIntensity: 0.95 }
 
 export const SHOP = { W: 4.6, D: 3.4, H: 2.7, B: 0.22 }
 const { W, D, H, B } = SHOP
@@ -75,7 +76,7 @@ function Plaque({ store }) {
   const [tex, setTex] = useState(() => plaqueTexture(store, null))
   useEffect(() => {
     let alive = true
-    loadImage(motifUrl(store, '#7a5444')).then((img) => alive && setTex(plaqueTexture(store, img)))
+    loadImage(motifUrl(store, PAL.woodDark)).then((img) => alive && setTex(plaqueTexture(store, img)))
     return () => { alive = false }
   }, [store])
   return (
@@ -131,8 +132,8 @@ function Awning({ store }) {
 function Chair({ position, rot = 0 }) {
   return (
     <group position={position} rotation={[0, rot, 0]}>
-      <RoundedBox args={[0.46, 0.09, 0.46]} radius={0.04} position={[0, 0.42, 0]} castShadow><Mat color="#a0745c" /></RoundedBox>
-      <RoundedBox args={[0.46, 0.5, 0.09]} radius={0.04} position={[0, 0.72, -0.19]}><Mat color="#a0745c" /></RoundedBox>
+      <RoundedBox args={[0.46, 0.09, 0.46]} radius={0.04} position={[0, 0.42, 0]} castShadow><Mat color={WOOD} /></RoundedBox>
+      <RoundedBox args={[0.46, 0.5, 0.09]} radius={0.04} position={[0, 0.72, -0.19]}><Mat color={WOOD} /></RoundedBox>
       {[[-0.17, -0.17], [0.17, -0.17], [-0.17, 0.17], [0.17, 0.17]].map(([x, z], i) => (
         <mesh key={i} position={[x, 0.2, z]}><boxGeometry args={[0.05, 0.42, 0.05]} /><Mat color={WOOD} /></mesh>
       ))}
@@ -147,7 +148,7 @@ function TableSet({ position, check }) {
     <group position={position}>
       <mesh position={[0, 0.72, 0]} castShadow>
         <cylinderGeometry args={[0.55, 0.55, 0.06, 16]} />
-        {check ? <meshStandardMaterial map={ct} roughness={0.9} /> : <Mat color="#f1e6dc" />}
+        {check ? <meshStandardMaterial map={ct} roughness={0.9} /> : <Mat color={SNOW} />}
       </mesh>
       {check && (
         <mesh position={[0, 0.55, 0]}>
@@ -155,8 +156,8 @@ function TableSet({ position, check }) {
           <meshStandardMaterial map={ct} side={THREE.DoubleSide} roughness={0.9} />
         </mesh>
       )}
-      <mesh position={[0, 0.36, 0]}><cylinderGeometry args={[0.05, 0.05, 0.72, 6]} /><Mat color="#6b4a3c" /></mesh>
-      <mesh position={[0, 0.02, 0]}><cylinderGeometry args={[0.28, 0.3, 0.04, 10]} /><Mat color="#6b4a3c" /></mesh>
+      <mesh position={[0, 0.36, 0]}><cylinderGeometry args={[0.05, 0.05, 0.72, 6]} /><Mat color={PAL.woodDark} /></mesh>
+      <mesh position={[0, 0.02, 0]}><cylinderGeometry args={[0.28, 0.3, 0.04, 10]} /><Mat color={PAL.woodDark} /></mesh>
       <mesh position={[0, 0.78, 0]}><cylinderGeometry args={[0.5, 0.52, 0.05, 16]} /><Mat color={SNOW} /></mesh>
       <Chair position={[-0.85, 0, 0]} rot={Math.PI / 2} />
       <Chair position={[0.85, 0, 0]} rot={-Math.PI / 2} />
@@ -180,15 +181,15 @@ function ABoard({ position, kind, rot = 0 }) {
 
 function GiftShelf({ position, rot = 0, color }) {
   const boxes = [
-    [-0.25, 0.5, '#e9a6ad'], [0.2, 0.5, color], [-0.2, 0.95, '#a9c7b3'], [0.22, 0.95, '#f2d08a'], [0, 1.38, '#e9a6ad'],
+    [-0.25, 0.5, PAL.roof], [0.2, 0.5, color], [-0.2, 0.95, PAL.shade], [0.22, 0.95, PAL.glow], [0, 1.38, PAL.roof],
   ]
   return (
     <group position={position} rotation={[0, rot, 0]}>
       {[0.3, 0.75, 1.2].map((y) => (
-        <mesh key={y} position={[0, y, 0]} castShadow><boxGeometry args={[1, 0.06, 0.45]} /><Mat color="#c9a48e" /></mesh>
+        <mesh key={y} position={[0, y, 0]} castShadow><boxGeometry args={[1, 0.06, 0.45]} /><Mat color={WOOD} /></mesh>
       ))}
       {[-0.48, 0.48].map((x) => (
-        <mesh key={x} position={[x, 0.78, 0]}><boxGeometry args={[0.06, 1.56, 0.45]} /><Mat color="#b48b74" /></mesh>
+        <mesh key={x} position={[x, 0.78, 0]}><boxGeometry args={[0.06, 1.56, 0.45]} /><Mat color={PAL.woodDark} /></mesh>
       ))}
       {boxes.map(([x, y, c], i) => (
         <group key={i} position={[x, y, 0]}>
@@ -245,7 +246,7 @@ function Shop({ store }) {
     <group>
       {/* 둥근 받침 */}
       <RoundedBox args={[W + 0.45, B, D + 0.45]} radius={0.1} smoothness={3} position={[0, B / 2, 0]} receiveShadow castShadow>
-        <Mat color="#e3d3cc" />
+        <Mat color="#E4E0D6" />
       </RoundedBox>
       {/* 모서리를 크게 깎은 벽 */}
       <RoundedBox args={[W, H, D]} radius={0.55} smoothness={5} position={[0, B + H / 2, 0]} castShadow receiveShadow>
@@ -253,11 +254,11 @@ function Shop({ store }) {
       </RoundedBox>
       {/* 아랫단 띠 */}
       <RoundedBox args={[W + 0.08, 0.56, D + 0.08]} radius={0.27} smoothness={4} position={[0, B + 0.28, 0]}>
-        <Mat color="#e4cbbd" />
+        <Mat color={PAL.path} />
       </RoundedBox>
       {/* 처마 + 구름 같은 눈 지붕 */}
       <RoundedBox args={[W + 0.55, 0.22, D + 0.55]} radius={0.1} smoothness={3} position={[0, B + H + 0.06, 0]} castShadow>
-        <Mat color={WOOD} />
+        <Mat color={PAL.roof} />
       </RoundedBox>
       <RoundedBox args={[W + 0.8, 0.9, D + 0.8]} radius={0.44} smoothness={6} position={[0, B + H + 0.5, 0]} castShadow>
         <Mat color={SNOW} roughness={1} />
@@ -279,12 +280,12 @@ function Shop({ store }) {
       {/* 정면: 둥근 창문 · 아치 문 */}
       <Window position={[-1.22, B + 1.3, D / 2 - 0.02]} w={1.15} h={1.1} />
       <group position={[0.2, B, D / 2 - 0.02]}>
-        <mesh geometry={door.leaf}><Mat color="#9a6b55" /></mesh>
+        <mesh geometry={door.leaf}><Mat color={PAL.woodDark} /></mesh>
         <mesh geometry={door.glass} position={[0, 1.02, 0.1]}><meshStandardMaterial {...WARM} /></mesh>
-        <mesh position={[0.31, 0.85, 0.12]}><sphereGeometry args={[0.055, 10, 8]} /><Mat color="#e9c46a" metalness={0.4} /></mesh>
+        <mesh position={[0.31, 0.85, 0.12]}><sphereGeometry args={[0.055, 10, 8]} /><Mat color={PAL.glow} metalness={0.4} /></mesh>
         {/* 리스 */}
-        <mesh position={[0, 1.3, 0.14]}><torusGeometry args={[0.19, 0.07, 10, 20]} /><Mat color="#6f8f6a" /></mesh>
-        <mesh position={[0, 1.11, 0.19]}><sphereGeometry args={[0.06, 10, 8]} /><Mat color="#d0545c" /></mesh>
+        <mesh position={[0, 1.3, 0.14]}><torusGeometry args={[0.19, 0.07, 10, 20]} /><Mat color={PAL.pine} /></mesh>
+        <mesh position={[0, 1.11, 0.19]}><sphereGeometry args={[0.06, 10, 8]} /><Mat color={PAL.roof} /></mesh>
       </group>
       <Window position={[1.25, B + 1.3, D / 2 - 0.02]} w={0.7} h={1.1} />
       <Awning store={store} />
@@ -324,7 +325,7 @@ function Postcard({ store, animateAt }) {
           <meshStandardMaterial map={tex} emissive="#ffffff" emissiveMap={tex} emissiveIntensity={0.25} roughness={0.9} />
         </mesh>
       </group>
-      {sparkle && <Sparkles count={26} scale={[1.4, 1.4, 0.6]} size={6} speed={1.2} color="#fff3b0" />}
+      {sparkle && <Sparkles count={26} scale={[1.4, 1.4, 0.6]} size={6} speed={1.2} color={PAL.glow} />}
     </group>
   )
 }

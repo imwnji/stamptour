@@ -7,6 +7,7 @@ import { STORES, STORE_BY_ID } from '../data/stores.js'
 import { NODES, MAP_W, MAP_H, START_NODE, findPath } from '../data/map.js'
 import { drawMapCanvas, GROUND } from './mapTexture.js'
 import { snowDotTexture } from './textures.js'
+import { PAL } from './palette.js'
 import { StreetDecor } from './Decor.jsx'
 import Building from './Building.jsx'
 import Avatar from './Avatar.jsx'
@@ -290,7 +291,7 @@ function World({ onReady }) {
         ref={sun}
         position={[14, 26, 12]}
         intensity={1.15}
-        color="#fff1e8"
+        color="#FFF6E8"
         castShadow
         shadow-mapSize={[1024, 1024]}
         shadow-camera-left={-26}
@@ -329,10 +330,11 @@ export default function MapScene({ onReady }) {
       camera={{ near: 0.1, far: 400, position: [0, 20, 40], zoom: 20 }}
       gl={{ antialias: true, preserveDrawingBuffer: false }}
       onCreated={({ scene }) => {
-        scene.background = new THREE.Color('#f1e3e2')
+        scene.background = new THREE.Color(PAL.sky)
       }}
     >
-      <hemisphereLight args={['#fff2f0', '#f0dcd6', 1.0]} />
+      {/* 위는 하얀 겨울빛, 아래(그늘)는 눈 그림자(PAL.shade)를 눈빛과 섞은 옅은 푸른빛 */}
+      <hemisphereLight args={['#F7F8F4', '#CBD8DD', 1.05]} />
       <Suspense fallback={null}>
         <World onReady={onReady} />
       </Suspense>

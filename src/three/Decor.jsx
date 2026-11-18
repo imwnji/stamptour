@@ -5,15 +5,17 @@ import { RoundedBox, Instances, Instance } from '@react-three/drei'
 import { brickTexture } from './textures.js'
 import { PLAZA, STREETS, MAP_W, MAP_H, distToStreets } from '../data/map.js'
 import { STORES } from '../data/stores.js'
+import { PAL } from './palette.js'
 
 const Mat = ({ color, ...p }) => (
-  <meshStandardMaterial color={color} roughness={0.9} {...(color === '#ffffff' ? { emissive: '#fff3f2', emissiveIntensity: 0.3 } : {})} {...p} />
+  <meshStandardMaterial color={color} roughness={0.9} {...(color === SNOW ? { emissive: SNOW, emissiveIntensity: 0.32 } : {})} {...p} />
 )
-const SNOW = '#ffffff'
-const LEAF = '#7f9c7c'
-const LEAF_D = '#6a8869'
-const TRUNK = '#7a5244'
-const WOOD = '#9a6e58'
+const SNOW = PAL.snow
+const LEAF = PAL.pine
+const LEAF_D = PAL.pineDark
+const TRUNK = PAL.woodDark
+const WOOD = PAL.wood
+const IRON = '#4A5157' // 가로등 쇠
 
 export function SnowTree({ position, s = 1, y = 0 }) {
   return (
@@ -32,18 +34,18 @@ export function SnowTree({ position, s = 1, y = 0 }) {
 export function Lamp({ position }) {
   return (
     <group position={[position[0], 0, position[1]]}>
-      <mesh position={[0, 0.15, 0]}><cylinderGeometry args={[0.2, 0.26, 0.3, 8]} /><Mat color="#3a3638" /></mesh>
-      <mesh position={[0, 1.4, 0]} castShadow><cylinderGeometry args={[0.07, 0.09, 2.4, 8]} /><Mat color="#3a3638" /></mesh>
-      <mesh position={[0, 2.75, 0]}><boxGeometry args={[0.38, 0.5, 0.38]} /><meshStandardMaterial color="#ffe6b0" emissive="#ffc463" emissiveIntensity={1.6} /></mesh>
+      <mesh position={[0, 0.15, 0]}><cylinderGeometry args={[0.2, 0.26, 0.3, 8]} /><Mat color={IRON} /></mesh>
+      <mesh position={[0, 1.4, 0]} castShadow><cylinderGeometry args={[0.07, 0.09, 2.4, 8]} /><Mat color={IRON} /></mesh>
+      <mesh position={[0, 2.75, 0]}><boxGeometry args={[0.38, 0.5, 0.38]} /><meshStandardMaterial color={PAL.glow} emissive={PAL.glow} emissiveIntensity={1.5} /></mesh>
       {[[-1, -1], [1, -1], [-1, 1], [1, 1]].map(([x, z], i) => (
-        <mesh key={i} position={[x * 0.19, 2.75, z * 0.19]}><boxGeometry args={[0.04, 0.52, 0.04]} /><Mat color="#3a3638" /></mesh>
+        <mesh key={i} position={[x * 0.19, 2.75, z * 0.19]}><boxGeometry args={[0.04, 0.52, 0.04]} /><Mat color={IRON} /></mesh>
       ))}
-      <mesh position={[0, 3.12, 0]} rotation={[0, Math.PI / 4, 0]}><coneGeometry args={[0.36, 0.3, 4]} /><Mat color="#3a3638" /></mesh>
+      <mesh position={[0, 3.12, 0]} rotation={[0, Math.PI / 4, 0]}><coneGeometry args={[0.36, 0.3, 4]} /><Mat color={IRON} /></mesh>
       <mesh position={[0, 3.2, 0]} scale={[1, 0.45, 1]}><sphereGeometry args={[0.22, 8, 6]} /><Mat color={SNOW} /></mesh>
-      <mesh position={[0, 3.36, 0]}><sphereGeometry args={[0.05, 6, 5]} /><Mat color="#3a3638" /></mesh>
+      <mesh position={[0, 3.36, 0]}><sphereGeometry args={[0.05, 6, 5]} /><Mat color={IRON} /></mesh>
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.015, 0]}>
         <circleGeometry args={[1.5, 24]} />
-        <meshBasicMaterial color="#ffd9a0" transparent opacity={0.25} depthWrite={false} />
+        <meshBasicMaterial color={PAL.glow} transparent opacity={0.28} depthWrite={false} />
       </mesh>
     </group>
   )
@@ -59,7 +61,7 @@ export function Bench({ position, rot = 0, y = 0 }) {
         <mesh key={y2} position={[0, 0.78 + y2, -0.3]} rotation={[-0.15, 0, 0]}><boxGeometry args={[1.9, 0.12, 0.06]} /><Mat color={WOOD} /></mesh>
       ))}
       {[-0.8, 0.8].map((x) => (
-        <mesh key={x} position={[x, 0.24, 0]}><boxGeometry args={[0.1, 0.48, 0.5]} /><Mat color="#7a5244" /></mesh>
+        <mesh key={x} position={[x, 0.24, 0]}><boxGeometry args={[0.1, 0.48, 0.5]} /><Mat color={TRUNK} /></mesh>
       ))}
       <RoundedBox args={[1.88, 0.1, 0.5]} radius={0.05} position={[0, 0.55, 0]}><Mat color={SNOW} /></RoundedBox>
       <RoundedBox args={[1.88, 0.08, 0.12]} radius={0.04} position={[0, 0.92, -0.32]}><Mat color={SNOW} /></RoundedBox>
@@ -67,7 +69,7 @@ export function Bench({ position, rot = 0, y = 0 }) {
   )
 }
 
-const FLOWER = ['#ffffff', '#f6c6cf', '#ffffff', '#f2a7b5', '#fff3f0']
+const FLOWER = [PAL.snow, PAL.roof, PAL.snow, PAL.glow, PAL.snow] // 눈송이 + 빨간 열매 + 노란 꽃
 export function Bush({ position, y = 0, s = 1 }) {
   const fl = useMemo(
     () => Array.from({ length: 7 }).map((_, i) => {
@@ -90,11 +92,11 @@ export function Bush({ position, y = 0, s = 1 }) {
 export function PottedTree({ position }) {
   return (
     <group position={position}>
-      <mesh position={[0, 0.25, 0]} castShadow><cylinderGeometry args={[0.32, 0.24, 0.5, 10]} /><Mat color="#c98762" /></mesh>
-      <mesh position={[0, 0.5, 0]}><cylinderGeometry args={[0.34, 0.34, 0.06, 10]} /><Mat color="#b37452" /></mesh>
+      <mesh position={[0, 0.25, 0]} castShadow><cylinderGeometry args={[0.32, 0.24, 0.5, 10]} /><Mat color={PAL.roof} /></mesh>
+      <mesh position={[0, 0.5, 0]}><cylinderGeometry args={[0.34, 0.34, 0.06, 10]} /><Mat color={PAL.roofDark} /></mesh>
       <mesh position={[0, 1.05, 0]} castShadow><coneGeometry args={[0.42, 1.1, 8]} /><Mat color={LEAF_D} flatShading /></mesh>
       <mesh position={[0, 1.35, 0]}><coneGeometry args={[0.28, 0.5, 8]} /><Mat color={SNOW} flatShading /></mesh>
-      {[[0.22, 0.85, 0.2, '#e85d6a'], [-0.2, 1.0, 0.18, '#f3c74f'], [0.1, 1.15, -0.2, '#7cc6e8'], [-0.15, 0.75, -0.25, '#f3c74f']].map(([x, yy, z, c], i) => (
+      {[[0.22, 0.85, 0.2, PAL.roof], [-0.2, 1.0, 0.18, '#f3c74f'], [0.1, 1.15, -0.2, PAL.shade], [-0.15, 0.75, -0.25, '#f3c74f']].map(([x, yy, z, c], i) => (
         <mesh key={i} position={[x, yy, z]}><sphereGeometry args={[0.05, 6, 5]} /><meshStandardMaterial color={c} emissive={c} emissiveIntensity={0.6} /></mesh>
       ))}
       <mesh position={[0, 1.66, 0]}><octahedronGeometry args={[0.09, 0]} /><meshStandardMaterial color="#f8d66b" emissive="#f8c33b" emissiveIntensity={0.8} /></mesh>
@@ -137,7 +139,7 @@ export function Terrace({ x0, x1, z0, z1, h = 1.3 }) {
         <meshStandardMaterial map={tex} roughness={0.95} />
       </mesh>
       <RoundedBox args={[x1 - x0 + 0.3, 0.3, z1 - z0 + 0.3]} radius={0.14} position={[cx, h + 0.05, cz]} receiveShadow>
-        <Mat color="#fbf4f2" />
+        <Mat color={SNOW} />
       </RoundedBox>
     </group>
   )
@@ -148,7 +150,7 @@ export function PlazaTree() {
   const posts = 14
   return (
     <group position={[PLAZA.x, 0, PLAZA.z]}>
-      <mesh position={[0, 0.12, 0]} receiveShadow><cylinderGeometry args={[R - 0.1, R, 0.24, 28]} /><Mat color="#f7eeec" /></mesh>
+      <mesh position={[0, 0.12, 0]} receiveShadow><cylinderGeometry args={[R - 0.1, R, 0.24, 28]} /><Mat color={PAL.path} /></mesh>
       <SnowTree position={[0, 0]} s={1.25} y={0.1} />
       {Array.from({ length: posts }).map((_, i) => {
         const a = (i / posts) * Math.PI * 2
@@ -178,8 +180,8 @@ export function Signpost({ position, y = 0 }) {
       <mesh position={[0, 1.1, 0]} castShadow><cylinderGeometry args={[0.09, 0.11, 2.2, 7]} /><Mat color={WOOD} /></mesh>
       {[[1.85, 0.25, 1], [1.4, -0.3, -1]].map(([yy, rz, dir], i) => (
         <group key={i} position={[dir * 0.45, yy, 0.06]} rotation={[0, 0, rz * 0.3]}>
-          <mesh><boxGeometry args={[1.0, 0.3, 0.07]} /><Mat color="#c9a07c" /></mesh>
-          <mesh position={[dir * 0.55, 0, 0]} rotation={[0, 0, (dir * -Math.PI) / 2]}><coneGeometry args={[0.15, 0.18, 3]} /><Mat color="#c9a07c" /></mesh>
+          <mesh><boxGeometry args={[1.0, 0.3, 0.07]} /><Mat color={WOOD} /></mesh>
+          <mesh position={[dir * 0.55, 0, 0]} rotation={[0, 0, (dir * -Math.PI) / 2]}><coneGeometry args={[0.15, 0.18, 3]} /><Mat color={WOOD} /></mesh>
           <RoundedBox args={[1.0, 0.07, 0.12]} radius={0.03} position={[0, 0.17, 0]}><Mat color={SNOW} /></RoundedBox>
         </group>
       ))}
