@@ -1,35 +1,32 @@
-// 길 그래프 — 아바타는 이 노드/간선을 따라 걷는다.
-// 좌표계: x(서 -, 동 +), z(북 -, 남 +).  지도 크기 36 x 54
-// 구조: 아래쪽 골목 입구(S) → 가운데 큰길(m0~m3) → 위쪽 원형 광장(P)
-//       각 줄(m*)에서 왼쪽/오른쪽 가게 앞(f_*)으로 갈라짐
-import { STORES } from './stores.js'
+// 길 그래프 — 아바타는 이 노드/간선을 따라 걷는다. (layout.js 에서 위경도로부터 자동 생성)
+// 좌표계: x(서 -, 동 +), z(북 -, 남 +).  1칸 = 5m (실제 지도와 같은 비율)
+// 구조: 출발 위치(S, 8Q98HXG9+HJH · 필운대로 남쪽 초입) → 필운대로 → 북쪽 끝 광장(P, 수성동 계곡 쪽)
+//       각 골목은 교차로 노드로 이어지고, 매장마다 길 위 지점(a_매장) → 가게 앞(f_매장)
+import { LAYOUT } from './stores.js'
+import { HALF_MAIN } from './layout.js'
 
-export const MAP_W = 36
-export const MAP_H = 54
-export const START_NODE = 'S'
-export const PATH_HALF = 2.7 // 큰길 반폭
-export const PLAZA = { x: 0, z: -20.5, r: 5.6 }
+export const MAP_W = LAYOUT.width
+export const MAP_H = LAYOUT.height
+export const STREETS = LAYOUT.streets
+export const NODES = LAYOUT.nodes
+export const EDGES = LAYOUT.edges
+export const PATH_HALF = HALF_MAIN
 
-export const NODES = {
-  S: [0, 21.5],
-  P: [0, -15.5],
-}
+export const BG_STREETS = LAYOUT.bg // 배경 골목 (그림에만)
+export const BG_HALF = 0.4
+export const START_NODE = 'S' // 출발 위치 (streets.js 의 START_LL)
 
-// 줄마다 큰길 위 분기점
-const rows = [...new Set(STORES.map((s) => s.row))].sort()
-rows.forEach((r) => {
-  const st = STORES.find((s) => s.row === r)
-  NODES['m' + r] = [0, st.front[1]]
+// 큰길(필운대로)의 가장 북쪽 끝에 원형 광장 (수성동 계곡 쪽, 길 끝이 광장 안쪽으로 조금 들어가게)
+let north = null
+STREETS.filter((s) => s.main).forEach((s) => {
+  ;[[0, 1], [s.pts.length - 1, s.pts.length - 2]].forEach(([i, j]) => {
+    if (!north || s.pts[i][1] < north.end[1]) north = { end: s.pts[i], prev: s.pts[j] }
+  })
 })
-STORES.forEach((s) => {
-  NODES['f_' + s.id] = s.front
-})
-
-export const EDGES = []
-// 큰길: S → m0 → m1 → m2 → m3 → P   (row 0 이 가장 아래)
-const spine = ['S', ...rows.map((r) => 'm' + r), 'P']
-for (let i = 0; i < spine.length - 1; i++) EDGES.push([spine[i], spine[i + 1]])
-STORES.forEach((s) => EDGES.push(['m' + s.row, 'f_' + s.id]))
+const { end, prev } = north
+const d = Math.hypot(end[0] - prev[0], end[1] - prev[1])
+const R = 4.2
+export const PLAZA = { x: end[0] + ((end[0] - prev[0]) / d) * R * 0.55, z: end[1] + ((end[1] - prev[1]) / d) * R * 0.55, r: R }
 
 const dist = (a, b) => Math.hypot(a[0] - b[0], a[1] - b[1])
 
@@ -66,4 +63,20 @@ export function findPath(from, to) {
     c = prev[c]
   }
   return path
+}
+
+// 점 → 가장 가까운 길까지 거리 (소품 배치에서 길 위를 피할 때)
+export function distToStreets(x, z, withBg = false) {
+  let best = Infinity
+  const list = withBg ? [...STREETS, ...BG_STREETS.map((pts) => ({ pts, half: BG_HALF }))] : STREETS
+  for (const s of list) {
+    for (let i = 0; i < s.pts.length - 1; i++) {
+      const a = s.pts[i], b = s.pts[i + 1]
+      const dx = b[0] - a[0], dz = b[1] - a[1]
+      const L2 = dx * dx + dz * dz || 1e-9
+      const u = Math.max(0, Math.min(1, ((x - a[0]) * dx + (z - a[1]) * dz) / L2))
+      best = Math.min(best, Math.hypot(x - a[0] - dx * u, z - a[1] - dz * u) - s.half)
+    }
+  }
+  return best
 }

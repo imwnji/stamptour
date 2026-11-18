@@ -61,7 +61,7 @@ export default function Journal() {
                   <span className={'tape ' + TAPES[i % 3]} />
                   {rec ? (
                     <>
-                      <img src={stampUrl(s)} alt={s.name} style={{ transform: `rotate(${TILT[i]}deg)` }} />
+                      <img src={stampUrl(s)} alt={s.name} style={{ transform: `rotate(${TILT[i % TILT.length]}deg)` }} />
                       <span className="hand date">{fmtDate(rec.date)}</span>
                     </>
                   ) : (
@@ -201,7 +201,7 @@ function CompletePage({ onBack }) {
       <p className="hand muted">{STORES.length}개의 도장을 모두 모았어요</p>
       <div className="mini-grid">
         {STORES.map((s, i) => (
-          <img key={s.id} src={stampUrl(s)} alt={s.name} style={{ transform: `rotate(${TILT[i]}deg)`, animationDelay: `${0.1 + i * 0.07}s` }} />
+          <img key={s.id} src={stampUrl(s)} alt={s.name} style={{ transform: `rotate(${TILT[i % TILT.length]}deg)`, animationDelay: `${0.1 + i * 0.05}s` }} />
         ))}
       </div>
       <button className="primary xmas" onClick={make} disabled={busy}>{busy ? '저널을 엮는 중…' : '저널을 이미지 한 장으로 저장'}</button>

@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useApp } from '../store.js'
-import { STORE_BY_ID, TYPE_LABEL } from '../data/stores.js'
+import { STORE_BY_ID, TYPE_LABEL, mapsUrl } from '../data/stores.js'
 import { stampUrl, SILHOUETTE } from '../lib/stampSvg.js'
 import { fmtDate } from '../lib/photo.js'
 
@@ -28,7 +28,7 @@ export default function StoreSheet() {
     <div className={'dim' + (closing ? ' out' : '')} onClick={close}>
       <div className={'sheet paper' + (closing ? ' out' : '')} onClick={(e) => e.stopPropagation()} role="dialog" aria-label={store.name}>
         <div className="sheet-band" style={{ background: store.color }}>
-          <span className="chip">{TYPE_LABEL[store.type]}</span>
+          <span className="chip">{store.category || TYPE_LABEL[store.type]}</span>
           <span className="band-en">{store.nameEn}</span>
         </div>
         <button className="x" onClick={close} aria-label="닫기">✕</button>
@@ -37,6 +37,9 @@ export default function StoreSheet() {
         <dl className="meta">
           <div><dt>주소</dt><dd>{store.address}</dd></div>
           <div><dt>운영</dt><dd>{store.hours}</dd></div>
+          {store.cid && (
+            <div><dt>지도</dt><dd><a href={mapsUrl(store)} target="_blank" rel="noopener noreferrer">구글맵에서 보기 ↗</a></dd></div>
+          )}
         </dl>
 
         <div className="slot-wrap">

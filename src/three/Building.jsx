@@ -1,5 +1,6 @@
 // 눈 덮인 가게 건물 (베타: 코드로 만든 임시 모델, 정면 = +z)
-// 공통: 크림색 벽 + 눈 지붕 + 지붕 위 둥근 간판(문양+이름) + 차양 + 따뜻한 창문
+// 공통: 모서리가 둥근 크림색 벽 + 구름처럼 폭신한 눈 지붕 + 지붕 위 둥근 간판(문양+이름)
+//       + 끝이 말린 차양 + 둥근 창문·아치 문 (전체적으로 동글동글 폭신폭신하게)
 // 업종별 앞마당 소품: 카페(테이블·의자·입간판) / 소품샵(선물 선반·트리 화분) / 먹거리(체크 테이블·메뉴판)
 // Blender 에서 만든 .glb 가 준비되면 useGLTF 로 Shop 내부를 교체하세요.
 import { useMemo, useRef, useEffect, useState } from 'react'
@@ -10,6 +11,7 @@ import { plaqueTexture, awningTexture, chalkTexture, checkTexture, postcardTextu
 import { stampUrl, motifUrl, loadImage } from '../lib/stampSvg.js'
 import { useApp } from '../store.js'
 import { PottedTree, Bush } from './Decor.jsx'
+import { BUILD_SCALE } from '../data/layout.js'
 
 const Mat = ({ color, ...p }) => (
   <meshStandardMaterial color={color} roughness={0.85} {...(color === '#ffffff' ? { emissive: '#fff3f2', emissiveIntensity: 0.3 } : {})} {...p} />
@@ -21,22 +23,50 @@ const WARM = { color: '#ffe2ae', emissive: '#ffbf66', emissiveIntensity: 1.0 }
 export const SHOP = { W: 4.6, D: 3.4, H: 2.7, B: 0.22 }
 const { W, D, H, B } = SHOP
 
+// 둥근 사각형 (가운데 기준)
+function roundRect(w, h, r) {
+  const s = new THREE.Shape()
+  const x = -w / 2, y = -h / 2
+  s.moveTo(x + r, y)
+  s.lineTo(x + w - r, y); s.quadraticCurveTo(x + w, y, x + w, y + r)
+  s.lineTo(x + w, y + h - r); s.quadraticCurveTo(x + w, y + h, x + w - r, y + h)
+  s.lineTo(x + r, y + h); s.quadraticCurveTo(x, y + h, x, y + h - r)
+  s.lineTo(x, y + r); s.quadraticCurveTo(x, y, x + r, y)
+  return s
+}
+// 위가 반원인 아치 (바닥 가운데 기준)
+function arch(w, h) {
+  const s = new THREE.Shape()
+  const r = w / 2
+  s.moveTo(-r, 0)
+  s.lineTo(r, 0)
+  s.lineTo(r, h - r)
+  s.absarc(0, h - r, r, 0, Math.PI, false)
+  s.lineTo(-r, 0)
+  return s
+}
+// 앞뒤 모서리까지 말랑하게 깎은 판
+const softExtrude = (shape, depth = 0.05, bevel = 0.04) =>
+  new THREE.ExtrudeGeometry(shape, { depth, bevelEnabled: true, bevelThickness: bevel, bevelSize: bevel, bevelSegments: 4, curveSegments: 14 })
+
 function Window({ position, w, h }) {
+  const geo = useMemo(() => {
+    const r = Math.min(w, h) * 0.42
+    return {
+      frame: softExtrude(roundRect(w + 0.14, h + 0.14, r + 0.07), 0.04, 0.05),
+      glass: new THREE.ShapeGeometry(roundRect(w, h, r), 14),
+    }
+  }, [w, h])
   return (
     <group position={position}>
-      <mesh position={[0, 0, -0.01]}>
-        <boxGeometry args={[w + 0.16, h + 0.16, 0.08]} />
-        <Mat color={WOOD} />
-      </mesh>
-      <mesh position={[0, 0, 0.035]}>
-        <planeGeometry args={[w, h]} />
-        <meshStandardMaterial {...WARM} />
-      </mesh>
-      <mesh position={[0, 0, 0.045]}><boxGeometry args={[0.05, h, 0.02]} /><Mat color={WOOD} /></mesh>
-      <mesh position={[0, 0, 0.045]}><boxGeometry args={[w, 0.05, 0.02]} /><Mat color={WOOD} /></mesh>
-      {/* 창턱 + 눈 */}
-      <mesh position={[0, -h / 2 - 0.1, 0.1]}><boxGeometry args={[w + 0.3, 0.08, 0.22]} /><Mat color={WOOD} /></mesh>
-      <RoundedBox args={[w + 0.26, 0.09, 0.22]} radius={0.04} position={[0, -h / 2 - 0.03, 0.1]}><Mat color={SNOW} /></RoundedBox>
+      <mesh geometry={geo.frame} position={[0, 0, -0.03]}><Mat color={WOOD} /></mesh>
+      <mesh geometry={geo.glass} position={[0, 0, 0.07]}><meshStandardMaterial {...WARM} /></mesh>
+      {/* 십자 창살 (끝이 둥근 막대) */}
+      <mesh position={[0, 0, 0.08]}><capsuleGeometry args={[0.025, h - 0.12, 3, 8]} /><Mat color={WOOD} /></mesh>
+      <mesh position={[0, 0, 0.08]} rotation={[0, 0, Math.PI / 2]}><capsuleGeometry args={[0.025, w - 0.12, 3, 8]} /><Mat color={WOOD} /></mesh>
+      {/* 창턱 + 소복한 눈 */}
+      <RoundedBox args={[w + 0.34, 0.1, 0.26]} radius={0.045} position={[0, -h / 2 - 0.1, 0.12]}><Mat color={WOOD} /></RoundedBox>
+      <RoundedBox args={[w + 0.3, 0.14, 0.26]} radius={0.065} position={[0, -h / 2 - 0.01, 0.12]}><Mat color={SNOW} /></RoundedBox>
     </group>
   )
 }
@@ -50,7 +80,7 @@ function Plaque({ store }) {
   }, [store])
   return (
     <group position={[0, B + H + 0.95, D / 2 + 0.32]} rotation={[-0.1, 0, 0]}>
-      <RoundedBox args={[2.2, 1.55, 0.14]} radius={0.06} position={[0, 0, -0.08]} castShadow>
+      <RoundedBox args={[2.2, 1.55, 0.14]} radius={0.068} smoothness={4} position={[0, 0, -0.08]} castShadow>
         <Mat color={WOOD} />
       </RoundedBox>
       <mesh>
@@ -58,7 +88,7 @@ function Plaque({ store }) {
         <meshStandardMaterial map={tex} transparent roughness={0.8} emissive="#ffffff" emissiveMap={tex} emissiveIntensity={0.18} />
       </mesh>
       {/* 간판 위 눈 */}
-      <RoundedBox args={[1.6, 0.16, 0.24]} radius={0.07} position={[0, 0.8, -0.04]}><Mat color={SNOW} /></RoundedBox>
+      <RoundedBox args={[1.7, 0.24, 0.3]} radius={0.115} smoothness={4} position={[0, 0.82, -0.04]}><Mat color={SNOW} /></RoundedBox>
     </group>
   )
 }
@@ -79,9 +109,14 @@ function Awning({ store }) {
         <planeGeometry args={[W + 0.1, depth]} />
         <meshStandardMaterial map={tex} side={THREE.DoubleSide} roughness={0.9} />
       </mesh>
+      {/* 차양 앞 끝: 폭신하게 말린 롤 */}
+      <mesh position={[0, frontY + 0.02, frontZ]} rotation={[0, 0, Math.PI / 2]} castShadow>
+        <capsuleGeometry args={[0.11, W - 0.1, 4, 12]} />
+        <meshStandardMaterial color={store.awning} roughness={0.9} />
+      </mesh>
       {Array.from({ length: N }).map((_, i) => (
-        <mesh key={i} position={[-(W + 0.1) / 2 + sr + i * sr * 2, frontY + 0.005, frontZ + 0.005]}>
-          <circleGeometry args={[sr, 10, Math.PI, Math.PI]} />
+        <mesh key={i} position={[-(W + 0.1) / 2 + sr + i * sr * 2, frontY - 0.08, frontZ + 0.06]}>
+          <circleGeometry args={[sr, 12, Math.PI, Math.PI]} />
           <meshStandardMaterial
             color={store.awningStyle === 'solid' ? store.awning : i % 2 ? '#fbf3ea' : store.awning}
             side={THREE.DoubleSide}
@@ -96,8 +131,8 @@ function Awning({ store }) {
 function Chair({ position, rot = 0 }) {
   return (
     <group position={position} rotation={[0, rot, 0]}>
-      <mesh position={[0, 0.42, 0]} castShadow><boxGeometry args={[0.42, 0.06, 0.42]} /><Mat color="#a0745c" /></mesh>
-      <mesh position={[0, 0.72, -0.19]}><boxGeometry args={[0.42, 0.5, 0.05]} /><Mat color="#a0745c" /></mesh>
+      <RoundedBox args={[0.46, 0.09, 0.46]} radius={0.04} position={[0, 0.42, 0]} castShadow><Mat color="#a0745c" /></RoundedBox>
+      <RoundedBox args={[0.46, 0.5, 0.09]} radius={0.04} position={[0, 0.72, -0.19]}><Mat color="#a0745c" /></RoundedBox>
       {[[-0.17, -0.17], [0.17, -0.17], [-0.17, 0.17], [0.17, 0.17]].map(([x, z], i) => (
         <mesh key={i} position={[x, 0.2, z]}><boxGeometry args={[0.05, 0.42, 0.05]} /><Mat color={WOOD} /></mesh>
       ))}
@@ -157,8 +192,8 @@ function GiftShelf({ position, rot = 0, color }) {
       ))}
       {boxes.map(([x, y, c], i) => (
         <group key={i} position={[x, y, 0]}>
-          <mesh><boxGeometry args={[0.32, 0.3, 0.3]} /><Mat color={c} /></mesh>
-          <mesh><boxGeometry args={[0.07, 0.31, 0.31]} /><Mat color="#fff7ec" /></mesh>
+          <RoundedBox args={[0.32, 0.3, 0.3]} radius={0.07}><Mat color={c} /></RoundedBox>
+          <RoundedBox args={[0.08, 0.32, 0.32]} radius={0.03}><Mat color="#fff7ec" /></RoundedBox>
         </group>
       ))}
       <RoundedBox args={[1.08, 0.1, 0.5]} radius={0.04} position={[0, 1.6, 0]}><Mat color={SNOW} /></RoundedBox>
@@ -194,60 +229,71 @@ function Props({ store }) {
   )
 }
 
+// 지붕 위 눈 뭉치 (구름처럼 몽글몽글)
+const PUFFS = [
+  [-1.55, 0.95, -0.55, 0.78], [-0.45, 1.08, -0.75, 0.86], [0.75, 1.02, -0.6, 0.82], [1.7, 0.92, -0.35, 0.7],
+  [-1.0, 0.92, 0.55, 0.66], [0.25, 1.0, 0.45, 0.72], [1.25, 0.9, 0.6, 0.6],
+]
+const DRIPS = [-2.05, -1.45, -0.85, -0.2, 0.45, 1.05, 1.65, 2.15]
+
 function Shop({ store }) {
+  const door = useMemo(() => ({
+    leaf: softExtrude(arch(0.95, 1.85), 0.05, 0.045),
+    glass: new THREE.ShapeGeometry(arch(0.56, 0.62), 14),
+  }), [])
   return (
     <group>
-      <mesh position={[0, B / 2, 0]} receiveShadow castShadow>
-        <boxGeometry args={[W + 0.25, B, D + 0.25]} />
+      {/* 둥근 받침 */}
+      <RoundedBox args={[W + 0.45, B, D + 0.45]} radius={0.1} smoothness={3} position={[0, B / 2, 0]} receiveShadow castShadow>
         <Mat color="#e3d3cc" />
-      </mesh>
-      <mesh position={[0, B + H / 2, 0]} castShadow receiveShadow>
-        <boxGeometry args={[W, H, D]} />
+      </RoundedBox>
+      {/* 모서리를 크게 깎은 벽 */}
+      <RoundedBox args={[W, H, D]} radius={0.55} smoothness={5} position={[0, B + H / 2, 0]} castShadow receiveShadow>
         <Mat color={store.wall} />
-      </mesh>
-      <mesh position={[0, B + 0.28, 0]}>
-        <boxGeometry args={[W + 0.04, 0.56, D + 0.04]} />
+      </RoundedBox>
+      {/* 아랫단 띠 */}
+      <RoundedBox args={[W + 0.08, 0.56, D + 0.08]} radius={0.27} smoothness={4} position={[0, B + 0.28, 0]}>
         <Mat color="#e4cbbd" />
-      </mesh>
-      {[-1, 1].map((k) => (
-        <mesh key={k} position={[k * (W / 2), B + H / 2, D / 2]}>
-          <boxGeometry args={[0.16, H, 0.16]} />
-          <Mat color="#c9a48e" />
-        </mesh>
-      ))}
-      {/* 처마 + 눈 지붕 */}
-      <mesh position={[0, B + H + 0.08, 0]} castShadow>
-        <boxGeometry args={[W + 0.5, 0.16, D + 0.5]} />
+      </RoundedBox>
+      {/* 처마 + 구름 같은 눈 지붕 */}
+      <RoundedBox args={[W + 0.55, 0.22, D + 0.55]} radius={0.1} smoothness={3} position={[0, B + H + 0.06, 0]} castShadow>
         <Mat color={WOOD} />
-      </mesh>
-      <RoundedBox args={[W + 0.75, 0.75, D + 0.75]} radius={0.32} smoothness={3} position={[0, B + H + 0.5, 0]} castShadow>
+      </RoundedBox>
+      <RoundedBox args={[W + 0.8, 0.9, D + 0.8]} radius={0.44} smoothness={6} position={[0, B + H + 0.5, 0]} castShadow>
         <Mat color={SNOW} roughness={1} />
       </RoundedBox>
-      {[-1.9, -1.1, -0.2, 0.7, 1.5, 2.1].map((x, i) => (
-        <mesh key={i} position={[x, B + H + 0.13, D / 2 + 0.36]} scale={[1, 1.4, 1]}>
-          <sphereGeometry args={[0.1 + (i % 3) * 0.02, 8, 6]} />
+      {PUFFS.map(([x, y, z, r], i) => (
+        <mesh key={i} position={[x, B + H + y, z]} scale={[1, 0.62, 1]} castShadow>
+          <sphereGeometry args={[r, 16, 12]} />
+          <Mat color={SNOW} roughness={1} />
+        </mesh>
+      ))}
+      {/* 처마 끝에 몽글몽글 흘러내린 눈 */}
+      {DRIPS.map((x, i) => (
+        <mesh key={i} position={[x, B + H + 0.12 - (i % 3) * 0.04, D / 2 + 0.4]} scale={[1, 1.15, 0.9]}>
+          <sphereGeometry args={[0.15 + (i % 3) * 0.035, 12, 10]} />
           <Mat color={SNOW} />
         </mesh>
       ))}
       <Plaque store={store} />
-      {/* 정면: 창문 · 문 */}
-      <Window position={[-1.3, B + 1.3, D / 2 + 0.02]} w={1.3} h={1.15} />
-      <group position={[0.15, B, D / 2 + 0.03]}>
-        <mesh position={[0, 0.9, 0]}><boxGeometry args={[0.95, 1.8, 0.08]} /><Mat color="#9a6b55" /></mesh>
-        <mesh position={[0, 1.2, 0.05]}><planeGeometry args={[0.6, 0.65]} /><meshStandardMaterial {...WARM} /></mesh>
-        <mesh position={[0.32, 0.85, 0.07]}><sphereGeometry args={[0.05, 8, 6]} /><Mat color="#e9c46a" metalness={0.4} /></mesh>
+      {/* 정면: 둥근 창문 · 아치 문 */}
+      <Window position={[-1.22, B + 1.3, D / 2 - 0.02]} w={1.15} h={1.1} />
+      <group position={[0.2, B, D / 2 - 0.02]}>
+        <mesh geometry={door.leaf}><Mat color="#9a6b55" /></mesh>
+        <mesh geometry={door.glass} position={[0, 1.02, 0.1]}><meshStandardMaterial {...WARM} /></mesh>
+        <mesh position={[0.31, 0.85, 0.12]}><sphereGeometry args={[0.055, 10, 8]} /><Mat color="#e9c46a" metalness={0.4} /></mesh>
         {/* 리스 */}
-        <mesh position={[0, 1.2, 0.08]}><torusGeometry args={[0.2, 0.06, 6, 14]} /><Mat color="#6f8f6a" /></mesh>
-        <mesh position={[0, 1.02, 0.12]}><sphereGeometry args={[0.05, 6, 5]} /><Mat color="#d0545c" /></mesh>
+        <mesh position={[0, 1.3, 0.14]}><torusGeometry args={[0.19, 0.07, 10, 20]} /><Mat color="#6f8f6a" /></mesh>
+        <mesh position={[0, 1.11, 0.19]}><sphereGeometry args={[0.06, 10, 8]} /><Mat color="#d0545c" /></mesh>
       </group>
-      <Window position={[1.2, B + 1.3, D / 2 + 0.02]} w={0.75} h={1.15} />
+      <Window position={[1.25, B + 1.3, D / 2 - 0.02]} w={0.7} h={1.1} />
       <Awning store={store} />
       <Props store={store} />
     </group>
   )
 }
 
-const POSTCARD_POS = [1.98, B + 1.25, D / 2 + 0.03]
+const POSTCARD_POS = [1.6, B + 0.95, D / 2 + 0.14] // 오른쪽 창문 아래 귀퉁이에 붙임
 
 function Postcard({ store, animateAt }) {
   const [tex, setTex] = useState(null)
@@ -295,7 +341,7 @@ export default function Building({ store, onTap, bounceAt }) {
   }, [bounceAt])
 
   return (
-    <group position={[store.building[0], 0, store.building[1]]} rotation={[0, store.rot, 0]}>
+    <group position={[store.building[0], 0, store.building[1]]} rotation={[0, store.rot, 0]} scale={BUILD_SCALE}>
       <group ref={group}>
         <Shop store={store} />
         {stamped && <Postcard store={store} animateAt={postcard} />}

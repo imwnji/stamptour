@@ -16,7 +16,7 @@ const CAM_OFFSET = new THREE.Vector3(0, 18, 16)
 // 정사영(직교) 카메라: zoom = 화면 px / 월드 1칸.  기본은 가로로 약 17칸이 보이게
 const VIEW_W = 19
 const baseZoom = () => Math.max(window.innerWidth, 320) / VIEW_W
-const WALK_SPEED = 6.5 // units / s
+const WALK_SPEED = 8 // units / s (지도가 길어져서 조금 빠르게)
 const ELEV = Math.atan2(18, 16) // 카메라 내려다보는 각도
 
 function Ground({ onReady }) {
@@ -96,6 +96,7 @@ function World({ onReady }) {
   const { camera } = useThree()
   const controls = useRef()
   const avatar = useRef()
+  const sun = useRef()
   const anim = useRef({ mode: 'idle', t: 0 })
   const follow = useRef(null) // 카메라가 따라갈 지점
   const followOn = useRef(false)
@@ -185,7 +186,10 @@ function World({ onReady }) {
     const from = useApp.getState().avatarNode
     const pts = findPath(from, 'f_' + walkTarget).map(([x, z]) => new THREE.Vector3(x, 0, z))
     pts[0] = avatar.current.position.clone()
-    walk.current = { pts, seg: 0, d: 0, target: walkTarget }
+    let len = 0
+    for (let i = 1; i < pts.length; i++) len += pts[i].distanceTo(pts[i - 1])
+    // 먼 가게는 빨리 걸어서 7초 안팎에 도착
+    walk.current = { pts, seg: 0, d: 0, target: walkTarget, speed: Math.max(WALK_SPEED, len / 7) }
     anim.current.mode = 'walk'
     followOn.current = true
   }, [walkTarget])
@@ -217,7 +221,7 @@ function World({ onReady }) {
     // 걷기
     const w = walk.current
     if (w) {
-      let move = WALK_SPEED * dt
+      let move = w.speed * dt
       while (move > 0 && w.seg < w.pts.length - 1) {
         const A = w.pts[w.seg], B = w.pts[w.seg + 1]
         const len = A.distanceTo(B)
@@ -248,7 +252,7 @@ function World({ onReady }) {
     const c = controls.current
     if (!c || useApp.getState().phase !== 'map') return
     if (followOn.current) {
-      const goal = new THREE.Vector3(a.position.x * 0.4, 0, a.position.z - 5)
+      const goal = new THREE.Vector3(a.position.x, 0, a.position.z - 5)
       const k = 1 - Math.exp(-dt * 4)
       const delta = goal.sub(c.target).multiplyScalar(k)
       c.target.add(delta)
@@ -258,7 +262,7 @@ function World({ onReady }) {
     // 지도 밖으로 못 나가게 (줌에 따라 허용 범위 계산)
     const halfW = innerWidth / 2 / camera.zoom
     const halfD = innerHeight / 2 / camera.zoom / Math.sin(ELEV)
-    const xm = Math.max(0, 12 - halfW)
+    const xm = Math.max(0, MAP_W / 2 - 3 - halfW)
     let z0 = -MAP_H / 2 + halfD * 0.75
     let z1 = MAP_H / 2 - halfD * 0.95
     if (z0 > z1) z0 = z1 = (z0 + z1) / 2
@@ -271,10 +275,30 @@ function World({ onReady }) {
       c.target.z = cz
     }
     follow.current = c.target
+    // 그림자 범위가 화면을 따라다니게 (지도가 넓어서)
+    const L = sun.current
+    if (L) {
+      L.position.set(c.target.x + 14, 26, c.target.z + 12)
+      L.target.position.set(c.target.x, 0, c.target.z)
+      L.target.updateMatrixWorld()
+    }
   })
 
   return (
     <>
+      <directionalLight
+        ref={sun}
+        position={[14, 26, 12]}
+        intensity={1.15}
+        color="#fff1e8"
+        castShadow
+        shadow-mapSize={[1024, 1024]}
+        shadow-camera-left={-26}
+        shadow-camera-right={26}
+        shadow-camera-top={30}
+        shadow-camera-bottom={-30}
+        shadow-bias={-0.0006}
+      />
       <Ground onReady={() => { setReady(true); onReady?.() }} />
       {STORES.map((s) => (
         <Building key={s.id} store={s} onTap={onTap} bounceAt={bounce[s.id]} />
@@ -309,18 +333,6 @@ export default function MapScene({ onReady }) {
       }}
     >
       <hemisphereLight args={['#fff2f0', '#f0dcd6', 1.0]} />
-      <directionalLight
-        position={[14, 26, 12]}
-        intensity={1.15}
-        color="#fff1e8"
-        castShadow
-        shadow-mapSize={[1024, 1024]}
-        shadow-camera-left={-30}
-        shadow-camera-right={30}
-        shadow-camera-top={32}
-        shadow-camera-bottom={-32}
-        shadow-bias={-0.0006}
-      />
       <Suspense fallback={null}>
         <World onReady={onReady} />
       </Suspense>

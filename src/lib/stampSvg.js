@@ -43,6 +43,18 @@ const MOTIFS = {
   teapot: (c) => `<g fill="none" stroke="${c}" stroke-width="2.6" stroke-linecap="round"><ellipse cx="19" cy="26" rx="13" ry="10" fill="${c}"/><path d="M31 23 Q38 22 39 14"/><path d="M7 21 Q0 22 2 29 Q4 33 9 31"/><path d="M13 16 Q19 9 25 16"/><circle cx="19" cy="10" r="2" fill="${c}"/><path d="M33 9 q-2 -3 0 -5 q2 -2 0 -4" stroke-width="1.8"/></g>`,
   fish: (c) => `<g><path d="M4 20 Q14 6 28 12 L38 5 L36 20 L38 35 L28 28 Q14 34 4 20 Z" fill="${c}"/><circle cx="11" cy="18" r="2.2" fill="#fff"/><g fill="none" stroke="#fff" stroke-width="1.6" stroke-linecap="round"><path d="M16 15 q3 5 0 10"/><path d="M21 14 q3 6 0 12"/></g></g>`,
   mitten: (c) => `<g><path d="M9 30 V14 Q9 3 19 3 Q29 3 29 13 V19 Q33 13 37 17 Q39 20 33 27 L29 31 Z" fill="${c}"/><rect x="7" y="29" width="24" height="9" rx="2" fill="none" stroke="${c}" stroke-width="2.6"/><g stroke="#fff" stroke-width="1.6" stroke-linecap="round"><line x1="14" y1="13" x2="24" y2="13"/><line x1="14" y1="19" x2="24" y2="19"/></g></g>`,
+  bean: (c) => `<g transform="rotate(30 20 20)"><ellipse cx="20" cy="20" rx="12" ry="17" fill="${c}"/><path d="M15 6 Q25 20 15 34" stroke="#fff" stroke-width="2.6" fill="none" stroke-linecap="round"/></g>`,
+  mug: (c) => `<g><path d="M6 14 H28 V30 Q28 36 22 36 H12 Q6 36 6 30 Z" fill="${c}"/><path d="M28 18 Q36 18 36 24 Q36 30 28 30" fill="none" stroke="${c}" stroke-width="3"/><path d="M12 10 q-2 -3 0 -6 M18 10 q-2 -3 0 -6 M24 10 q-2 -3 0 -6" stroke="${c}" stroke-width="2" fill="none" stroke-linecap="round"/><path d="M11 23 l3 3 l3 -3 l3 3 l3 -3" stroke="#fff" stroke-width="1.8" fill="none" stroke-linejoin="round"/></g>`,
+  drumstick: (c) => `<g><ellipse cx="16" cy="16" rx="13" ry="11" transform="rotate(-40 16 16)" fill="${c}"/><rect x="22" y="23" width="6" height="12" rx="2" transform="rotate(-45 25 29)" fill="${c}"/><circle cx="31" cy="35" r="3.4" fill="${c}"/><circle cx="35" cy="31" r="3.4" fill="${c}"/><path d="M9 14 q4 -6 11 -5" stroke="#fff" stroke-width="2.2" fill="none" stroke-linecap="round"/></g>`,
+  berry: (c) => `<g><path d="M20 38 Q5 26 8 15 Q12 8 20 10 Q28 8 32 15 Q35 26 20 38 Z" fill="${c}"/><path d="M11 9 L20 13 L29 9 L24 4 L20 8 L16 4 Z" fill="${c}" opacity=".7"/><g fill="#fff"><circle cx="15" cy="19" r="1.4"/><circle cx="22" cy="17" r="1.4"/><circle cx="27" cy="23" r="1.4"/><circle cx="17" cy="26" r="1.4"/><circle cx="22" cy="31" r="1.4"/></g></g>`,
+  moon: (c) => `<g><path d="M24 3 A17 17 0 1 0 37 29 A13 13 0 1 1 24 3 Z" fill="${c}"/><circle cx="33" cy="8" r="2" fill="${c}"/><circle cx="29" cy="17" r="1.3" fill="${c}"/></g>`,
+  bread: (c) => `<g><path d="M3 28 Q3 11 20 11 Q37 11 37 28 Q37 34 31 34 H9 Q3 34 3 28 Z" fill="${c}"/><g stroke="#fff" stroke-width="2.4" stroke-linecap="round"><line x1="12" y1="18" x2="15" y2="26"/><line x1="19" y1="17" x2="21" y2="26"/><line x1="26" y1="17" x2="27" y2="26"/></g></g>`,
+  leaf: (c) => `<g><path d="M6 35 Q3 10 35 4 Q37 31 6 35 Z" fill="${c}"/><path d="M8 33 Q18 21 30 9" stroke="#fff" stroke-width="2.2" fill="none" stroke-linecap="round"/><path d="M15 25 l-1 -6 M21 19 l-1 -6 M18 22 l6 1 M24 16 l6 1" stroke="#fff" stroke-width="1.6" stroke-linecap="round"/></g>`,
+  gate: (c) => `<g fill="${c}"><rect x="5" y="11" width="9" height="25" rx="1"/><rect x="26" y="11" width="9" height="25" rx="1"/><rect x="3" y="5" width="13" height="5" rx="1"/><rect x="24" y="5" width="13" height="5" rx="1"/><rect x="1" y="36" width="38" height="3" rx="1"/><g fill="#fff"><rect x="7.5" y="15" width="4" height="2"/><rect x="28.5" y="15" width="4" height="2"/></g></g>`,
+  brush: (c) => `<g transform="rotate(35 20 20)"><rect x="17" y="1" width="6" height="22" rx="2" fill="${c}"/><rect x="15.5" y="22" width="9" height="4" fill="${c}" opacity=".7"/><path d="M16 26 H24 Q25 34 20 39 Q15 34 16 26 Z" fill="${c}"/></g>`,
+  gift: (c) => `<g><rect x="5" y="16" width="30" height="21" rx="2" fill="${c}"/><rect x="3" y="11" width="34" height="7" rx="2" fill="${c}"/><rect x="18" y="11" width="4" height="26" fill="#fff"/><path d="M20 11 Q12 2 9 7 Q7 11 20 11 Q28 2 31 7 Q33 11 20 11" fill="none" stroke="${c}" stroke-width="2.4"/></g>`,
+  planet: (c) => `<g><circle cx="20" cy="20" r="10" fill="${c}"/><ellipse cx="20" cy="20" rx="18" ry="6" transform="rotate(-20 20 20)" fill="none" stroke="${c}" stroke-width="2.6"/><circle cx="35" cy="5" r="1.8" fill="${c}"/><circle cx="5" cy="35" r="1.4" fill="${c}"/><circle cx="16" cy="16" r="2.4" fill="#fff" opacity=".7"/></g>`,
+  bag: (c) => `<g><path d="M6 14 H34 L32 37 H8 Z" fill="${c}"/><path d="M14 17 V10 Q14 4 20 4 Q26 4 26 10 V17" fill="none" stroke="${c}" stroke-width="2.8"/><circle cx="14" cy="17" r="1.7" fill="#fff"/><circle cx="26" cy="17" r="1.7" fill="#fff"/></g>`,
 }
 
 let seed = 1
@@ -51,7 +63,7 @@ export function stampSvg(store, { withFilter = true } = {}) {
   const id = 'ink' + seed++
   const shape = SHAPES[store.stamp.shape](c)
   const motif = MOTIFS[store.stamp.motif](c)
-  const text = store.nameEn
+  const text = store.nameEn.replace(/&/g, "&amp;")
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="240" height="240">
   <defs>
     <path id="arc" d="M60,98 A38,38 0 1,1 60,22 A38,38 0 1,1 60,98"/>

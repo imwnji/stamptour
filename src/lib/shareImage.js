@@ -104,11 +104,19 @@ export async function renderJournalImage(stamps) {
   const stampImgs = await Promise.all(STORES.map((s) => loadImage(stampUrl(s))))
   const photos = await Promise.all(STORES.map((s) => (stamps[s.id]?.photo ? loadImage(stamps[s.id].photo).catch(() => null) : null)))
 
-  const cellW = 455, cellH = 360, gx = 60, top = 340
+  // 칸 하나 = 495 x 380 (원래 2열 기준) 을 매장 수에 맞춰 축소해서 격자 배치
+  const n = STORES.length
+  const cols = n <= 8 ? 2 : 3
+  const rows = Math.ceil(n / cols)
+  const PW = 495, PH = 380, top = 330, bottom = 110
+  const sc = Math.min(1, (W - 80) / (cols * PW), (H - top - bottom) / (rows * PH))
+  const left = (W - cols * PW * sc) / 2
   STORES.forEach((s, i) => {
-    const col = i % 2, row = Math.floor(i / 2)
-    const x = 60 + col * (cellW + gx - 20)
-    const y = top + row * (cellH + 20)
+    const col = i % cols, row = Math.floor(i / cols)
+    c.save()
+    c.translate(left + col * PW * sc, top + row * PH * sc)
+    c.scale(sc, sc)
+    const x = 0, y = 0
     const rec = stamps[s.id]
     const tilt = (i % 2 ? 1 : -1) * (0.03 + (i % 3) * 0.012)
 
@@ -153,6 +161,7 @@ export async function renderJournalImage(stamps) {
     c.font = '400 28px Gaegu'
     const lines = wrap(c, rec?.note || '', 205, 2)
     lines.forEach((ln, k) => c.fillText(ln, x + 340, y + 262 + k * 32))
+    c.restore()
   })
 
   c.textAlign = 'center'

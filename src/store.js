@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import { STORES } from './data/stores.js'
+import { STORES, STORE_BY_ID } from './data/stores.js'
 import { START_NODE } from './data/map.js'
 import * as db from './lib/db.js'
 
@@ -25,7 +25,8 @@ export const useApp = create((set, get) => ({
 
   async init() {
     const list = await db.loadAll()
-    const stamps = Object.fromEntries(list.map((r) => [r.storeId, r]))
+    // 매장 목록이 바뀌어 없어진 매장의 옛 기록은 무시
+    const stamps = Object.fromEntries(list.filter((r) => STORE_BY_ID[r.storeId]).map((r) => [r.storeId, r]))
     set({ stamps, loaded: true })
   },
 

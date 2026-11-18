@@ -1,9 +1,10 @@
 // 거리 소품: 눈 덮인 나무, 가로등, 벤치, 꽃덤불, 울타리, 화분 트리, 벽돌 언덕, 광장 나무, 이정표
 import { useMemo } from 'react'
 import * as THREE from 'three'
-import { RoundedBox } from '@react-three/drei'
+import { RoundedBox, Instances, Instance } from '@react-three/drei'
 import { brickTexture } from './textures.js'
-import { PLAZA } from '../data/map.js'
+import { PLAZA, STREETS, MAP_W, MAP_H, distToStreets } from '../data/map.js'
+import { STORES } from '../data/stores.js'
 
 const Mat = ({ color, ...p }) => (
   <meshStandardMaterial color={color} roughness={0.9} {...(color === '#ffffff' ? { emissive: '#fff3f2', emissiveIntensity: 0.3 } : {})} {...p} />
@@ -198,40 +199,129 @@ export function Planter({ position, y = 0, w = 2.2 }) {
   )
 }
 
-// ── 지도 전체 소품 배치 ──
-const T_H = 1.3
-const TREES = [
-  [-8.5, 24.2, 1.15], [-13.5, 20.5, 1], [9.2, 24.8, 1.1], [13.6, 20.8, 1], [-4.8, 25.6, 0.7],
-  [-4.7, 11.2, 0.75], [-12.4, 12.6, 1], [-12.8, 4.4, 0.9], [-4.8, -6.1, 0.75], [-12.6, -3.2, 1], [-12.4, -11.8, 0.9],
-  [4.8, 2.6, 0.75], [12.5, 13.2, 1], [12.4, 3.8, 0.9], [4.9, -6.2, 0.75], [12.6, -4.6, 1], [12.5, -12.4, 0.9],
-  [-8.2, -14.6, 0.85], [8.3, -14.8, 0.85],
+// ── 지도 전체 소품 배치 (길·가게 위치에서 자동으로) ──
+function rng(seed) {
+  let s = seed
+  return () => {
+    s = (s * 16807) % 2147483647
+    return (s - 1) / 2147483646
+  }
+}
+
+// 여러 부품으로 된 소품을 부품별 InstancedMesh 로 (나무 60그루 = 메시 6개)
+function InstancedParts({ parts, items }) {
+  return parts.map((p, k) => (
+    <Instances key={k} limit={items.length} castShadow={!!p.cast} frustumCulled={false}>
+      {p.geo}
+      <Mat color={p.color} flatShading={p.flat} />
+      {items.map(([x, z, s, y = 0], i) => (
+        <Instance
+          key={i}
+          position={[x + p.pos[0] * s, y + p.pos[1] * s, z + p.pos[2] * s]}
+          scale={[(p.scale?.[0] ?? 1) * s, (p.scale?.[1] ?? 1) * s, (p.scale?.[2] ?? 1) * s]}
+        />
+      ))}
+    </Instances>
+  ))
+}
+
+const TREE_PARTS = [
+  { geo: <cylinderGeometry args={[0.22, 0.32, 1.4, 7]} />, color: TRUNK, pos: [0, 0.7, 0], cast: true },
+  { geo: <icosahedronGeometry args={[1.3, 1]} />, color: LEAF, flat: true, pos: [0, 2.0, 0], scale: [1, 0.82, 1], cast: true },
+  { geo: <icosahedronGeometry args={[0.7, 1]} />, color: LEAF_D, flat: true, pos: [0.55, 1.75, 0.45], scale: [1, 0.8, 1] },
+  { geo: <icosahedronGeometry args={[1.28, 2]} />, color: SNOW, flat: true, pos: [0, 2.32, 0], scale: [1, 0.72, 1], cast: true },
+  { geo: <icosahedronGeometry args={[0.7, 1]} />, color: SNOW, flat: true, pos: [-0.6, 2.25, 0.35], scale: [1, 0.7, 1] },
+  { geo: <icosahedronGeometry args={[0.7, 1]} />, color: SNOW, flat: true, pos: [0.5, 2.2, -0.45], scale: [1, 0.7, 1] },
 ]
-const TERRACE_TREES = [[-14.2, -22.5, 1.1], [-9.4, -25.2, 0.9], [-16.2, -17.8, 0.8], [14.4, -23, 1.1], [9.8, -25.4, 0.9]]
-const LAMPS = [[-3.35, 19.6], [3.35, 13.2], [-3.35, 4.6], [3.35, -3.8], [-3.35, -12.2], [3.35, 21]]
-const BUSHES = [[-3.7, 16.2], [3.7, 8.6], [-3.7, -3.6], [3.7, -11.2], [-3.8, 22.6], [3.8, 18.2], [-10.6, 17.8], [10.6, 0.2], [-10.8, -7.8], [12.4, 25.2]]
+const BUSH_PARTS = [
+  { geo: <icosahedronGeometry args={[0.5, 1]} />, color: LEAF, flat: true, pos: [0, 0.28, 0], scale: [1, 0.75, 1], cast: true },
+  { geo: <icosahedronGeometry args={[0.38, 1]} />, color: SNOW, flat: true, pos: [0, 0.5, 0], scale: [1, 0.45, 1] },
+  ...Array.from({ length: 6 }).map((_, i) => {
+    const a = (i / 6) * Math.PI * 2 + 0.3
+    return { geo: <icosahedronGeometry args={[0.09, 0]} />, color: FLOWER[i % 5], pos: [Math.cos(a) * 0.38, 0.38 + (i % 3) * 0.08, Math.sin(a) * 0.38] }
+  }),
+]
+
+function usePlacement() {
+  return useMemo(() => {
+    const r = rng(2025)
+    const homes = STORES.map((s) => s.building)
+    const fronts = STORES.map((s) => s.front)
+    const near = (list, x, z, d) => list.some((p) => Math.hypot(p[0] - x, p[1] - z) < d)
+    const inPlaza = (x, z, pad) => Math.hypot(x - PLAZA.x, z - PLAZA.z) < PLAZA.r + pad
+    const hw = MAP_W / 2 - 1.2, hh = MAP_H / 2 - 1.2
+
+    // 가로등: 큰길을 따라 양옆 번갈아
+    const lamps = []
+    STREETS.filter((s) => s.main).forEach((s) => {
+      let side = 1
+      for (let t = 3; t < s.len - 2; t += 7.5) {
+        let i = 0
+        while (i < s.pts.length - 2 && s.cum[i + 1] < t) i++
+        const a = s.pts[i], b = s.pts[i + 1]
+        const L = s.cum[i + 1] - s.cum[i]
+        const u = (t - s.cum[i]) / L
+        const dx = (b[0] - a[0]) / L, dz = (b[1] - a[1]) / L
+        const off = s.half + 0.6
+        const x = a[0] + (b[0] - a[0]) * u - dz * off * side
+        const z = a[1] + (b[1] - a[1]) * u + dx * off * side
+        side = -side
+        if (near(homes, x, z, 3.4) || near(fronts, x, z, 1.6) || distToStreets(x, z) < 0.3 || inPlaza(x, z, 0.5)) continue
+        lamps.push([x, z])
+      }
+    })
+
+    // 나무·덤불: 빈 땅에 골고루 (길·가게·광장은 피해서)
+    const trees = []
+    const bushes = []
+    const taken = [...lamps]
+    for (let tries = 0; tries < 4000 && (trees.length < 90 || bushes.length < 45); tries++) {
+      const x = (r() * 2 - 1) * hw, z = (r() * 2 - 1) * hh
+      const ds = distToStreets(x, z, true)
+      const tree = trees.length < 90 && (bushes.length >= 45 || r() < 0.66)
+      const pad = tree ? 1.5 : 0.7
+      if (ds < pad || near(homes, x, z, tree ? 4.0 : 3.3) || near(fronts, x, z, 2) || inPlaza(x, z, tree ? 1.6 : 0.8)) continue
+      if (near(taken, x, z, tree ? 2.3 : 1.3)) continue
+      taken.push([x, z])
+      if (tree) trees.push([x, z, ds > 6 ? 0.95 + r() * 0.3 : 0.7 + r() * 0.25])
+      else bushes.push([x, z, 0.8 + r() * 0.35])
+    }
+
+    // 벤치: 큰길 옆 빈자리 몇 군데
+    const benches = []
+    const main = STREETS.find((s) => s.main)
+    for (let t = 6; t < main.len - 6 && benches.length < 4; t += 13) {
+      let i = 0
+      while (i < main.pts.length - 2 && main.cum[i + 1] < t) i++
+      const a = main.pts[i], b = main.pts[i + 1]
+      const L = main.cum[i + 1] - main.cum[i]
+      const u = (t - main.cum[i]) / L
+      const dx = (b[0] - a[0]) / L, dz = (b[1] - a[1]) / L
+      for (const side of [1, -1]) {
+        const off = main.half + 1.0
+        const x = a[0] + (b[0] - a[0]) * u - dz * off * side, z = a[1] + (b[1] - a[1]) * u + dx * off * side
+        if (near(homes, x, z, 3.6) || near(fronts, x, z, 2) || near(lamps, x, z, 1.4) || distToStreets(x, z) < 0.5) continue
+        benches.push([x, z, Math.atan2(dz * side, -dx * side)]) // 등받이 반대(+z)가 길 쪽
+        break
+      }
+    }
+    return { lamps, trees, bushes, benches }
+  }, [])
+}
 
 export function StreetDecor() {
+  const { lamps, trees, bushes, benches } = usePlacement()
+  const P = PLAZA
   return (
     <group>
-      <Terrace x0={-18.2} x1={-6.6} z0={-27.4} z1={-16.4} h={T_H} />
-      <Terrace x0={6.6} x1={18.2} z0={-27.4} z1={-16.4} h={T_H} />
-      {TERRACE_TREES.map(([x, z, s], i) => <SnowTree key={i} position={[x, z]} s={s} y={T_H} />)}
-      <Signpost position={[-8.4, -18.2]} y={T_H} />
-      <Planter position={[9.6, -17.4]} y={T_H} />
-      <Bench position={[14.2, -17.6]} y={T_H} rot={0} />
-      <Fence from={[-12, -16.75]} to={[-15.8, -16.75]} y={T_H} />
       <PlazaTree />
-      {TREES.map(([x, z, s], i) => <SnowTree key={i} position={[x, z]} s={s} />)}
-      {LAMPS.map((p, i) => <Lamp key={i} position={p} />)}
-      {BUSHES.map(([x, z], i) => <Bush key={i} position={[x, 0, z]} />)}
-      <Bench position={[-10.6, 10.4]} rot={0.05} />
-      <Bench position={[8.2, 21.2]} rot={-0.1} />
-      <Bench position={[10.4, -6.7]} rot={0} />
-      <Fence from={[-14, 26.4]} to={[-5.6, 26.4]} />
-      <Fence from={[-5.6, 26.4]} to={[-5.6, 23.2]} />
-      <Fence from={[5.8, 26.6]} to={[12, 26.6]} />
-      <PottedTree position={[-3.75, 0, 7.4]} />
-      <PottedTree position={[3.75, 0, -1.2]} />
+      <Signpost position={[P.x + P.r + 0.9, P.z + 1.4]} />
+      <Bench position={[P.x - P.r - 0.9, P.z]} rot={Math.PI / 2} />
+      <Planter position={[P.x, P.z - P.r - 0.8]} />
+      <InstancedParts parts={TREE_PARTS} items={trees} />
+      <InstancedParts parts={BUSH_PARTS} items={bushes} />
+      {lamps.map((p, i) => <Lamp key={i} position={p} />)}
+      {benches.map(([x, z, rot], i) => <Bench key={i} position={[x, z]} rot={rot} />)}
     </group>
   )
 }
