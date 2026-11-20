@@ -41,9 +41,7 @@ export default function StoreSheet() {
         <dl className="meta">
           <div><dt>주소</dt><dd>{store.address}</dd></div>
           <div><dt>운영</dt><dd>{store.hours}</dd></div>
-          {store.cid && (
-            <div><dt>지도</dt><dd><a href={mapsUrl(store)} target="_blank" rel="noopener noreferrer">구글맵에서 보기 ↗</a></dd></div>
-          )}
+          <div><dt>지도</dt><dd><a href={mapsUrl(store)} target="_blank" rel="noopener noreferrer">네이버지도에서 보기 ↗</a></dd></div>
         </dl>
 
         <div className="slot-wrap">

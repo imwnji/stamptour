@@ -3,7 +3,9 @@
 //  - lat/lng: 구글맵 좌표 → 가장 가까운 길(streets.js) 옆에 자동 배치
 //  - (선택) shift: 길을 따라 칸 단위로 살짝 옮김, flip: 길 반대편으로 — 배치가 어색할 때만 손보정
 //  - (선택) pixelSide: 길 동('E')/서('W') 어느 쪽에 세울지
-//  - cid: 구글맵 장소 id → 매장 시트의 "구글맵에서 보기" 링크
+//  - cid: 구글맵 장소 id (참고용)
+//  - (선택) naver: 네이버지도 장소 링크 → 매장 시트의 "네이버지도에서 보기" (없으면 가게 이름으로 네이버지도 검색)
+//  - (선택) hours: 운영시간 (없으면 HOURS)
 //  - category: 구글맵 업종 표기, type: 'cafe' | 'gift' | 'food' → 건물 소품 + 빈 칸 실루엣
 //  - awning / awningStyle: 차양 색과 모양 ('stripe' 줄무늬 | 'solid' 단색)
 //  - model: 가게 고유 모양 (pixel/sprites.js: bag·hanok·sweater·cat·alpaca·glass), 없으면 공통 가게
@@ -12,7 +14,7 @@
 // ─────────────────────────────────────────────────────────────
 import { layoutStores } from './layout.js'
 
-const HOURS = '방문 전 구글맵에서 영업시간을 확인해 주세요'
+const HOURS = '[공란]'
 
 export const STORES = [
   {
@@ -172,12 +174,12 @@ export const STORES = [
   },
   {
     id: 'byeoksu',
-    name: '벽수산장 대문 기둥 흔적',
-    nameEn: 'BYEOKSUSANJANG',
-    sign: '벽수산장',
+    name: '스물트론스텔레',
+    nameEn: 'SMULTRONSTÄLLE',
+    sign: '스물트론스텔레',
     type: 'gift',
     category: '문구점',
-    intro: '필운대로7길, 옛 벽수산장 대문 기둥 흔적이 남은 자리. 골목의 시간을 기록해요',
+    intro: '필운대로7길의 문구점. 스웨덴어로 "나만 아는 산딸기 밭", 아끼는 비밀 장소라는 뜻이에요',
     address: '서울 종로구 필운대로7길 8 1층',
     lat: 37.5815404, lng: 126.9679872,
     cid: '-3653584710506383472',
@@ -272,4 +274,4 @@ export const STORE_BY_ID = Object.fromEntries(STORES.map((s) => [s.id, s]))
 
 export const TYPE_LABEL = { cafe: '카페', gift: '소품샵', food: '먹거리' }
 
-export const mapsUrl = (s) => `https://www.google.com/maps?cid=${s.cid}`
+export const mapsUrl = (s) => s.naver || `https://map.naver.com/p/search/${encodeURIComponent(s.name)}`
