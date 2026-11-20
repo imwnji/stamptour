@@ -35,10 +35,10 @@ function wrap(c, text, maxW, maxLines) {
 
 function fitFont(c, text, weight, size, maxW) {
   let s = size
-  c.font = `${weight} ${s}px Gaegu`
+  c.font = `${weight} ${s}px Galmuri11`
   while (c.measureText(text).width > maxW && s > 20) {
     s -= 2
-    c.font = `${weight} ${s}px Gaegu`
+    c.font = `${weight} ${s}px Galmuri11`
   }
 }
 
@@ -49,7 +49,7 @@ function coverDraw(c, img, x, y, w, h) {
 }
 
 export async function renderJournalImage(stamps) {
-  try { await document.fonts.load('700 40px Gaegu') } catch {}
+  try { await document.fonts.load('700 40px Galmuri11') } catch {}
   const cv = document.createElement('canvas')
   cv.width = W
   cv.height = H
@@ -94,10 +94,10 @@ export async function renderJournalImage(stamps) {
   // 제목
   c.textAlign = 'center'
   c.fillStyle = '#34405e'
-  c.font = '700 84px Gaegu'
+  c.font = '700 84px Galmuri11'
   c.fillText('SEOCHON WINTER JOURNAL', W / 2, 220)
   c.fillStyle = '#7a6a58'
-  c.font = '700 44px Gaegu'
+  c.font = '700 44px Galmuri11'
   const done = STORES.filter((s) => stamps[s.id]).length
   c.fillText(`겨울의 서촌을 기록하다  ·  ${done} / ${STORES.length}`, W / 2, 285)
 
@@ -136,7 +136,7 @@ export async function renderJournalImage(stamps) {
       c.fillRect(-96, -116, 192, 192)
     }
     c.fillStyle = '#5d5348'
-    c.font = '700 30px Gaegu'
+    c.font = '700 30px Galmuri11'
     c.fillText(rec ? fmtDate(rec.date, false) : '—', 0, 112)
     // 테이프
     c.fillStyle = ['rgba(240,200,120,0.8)', 'rgba(170,205,230,0.8)', 'rgba(240,170,170,0.8)'][i % 3]
@@ -158,7 +158,7 @@ export async function renderJournalImage(stamps) {
     fitFont(c, s.name, 700, 36, 205)
     c.fillText(s.name, x + 340, y + 222)
     c.fillStyle = '#5d5348'
-    c.font = '400 28px Gaegu'
+    c.font = '400 28px Galmuri11'
     const lines = wrap(c, rec?.note || '', 205, 2)
     lines.forEach((ln, k) => c.fillText(ln, x + 340, y + 262 + k * 32))
     c.restore()
@@ -166,7 +166,7 @@ export async function renderJournalImage(stamps) {
 
   c.textAlign = 'center'
   c.fillStyle = '#8a7b68'
-  c.font = '700 38px Gaegu'
+  c.font = '700 38px Galmuri11'
   c.fillText('#서촌겨울스탬프투어  #SEOCHONWINTERJOURNAL', W / 2, H - 60)
 
   return new Promise((resolve) => cv.toBlob((b) => resolve(b), 'image/png'))

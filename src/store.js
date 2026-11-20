@@ -19,6 +19,7 @@ export const useApp = create((set, get) => ({
   journal: null, // null | 'open'
   journalPage: null, // storeId (기록 보기)
   complete: false, // 완성 페이지
+  paperMap: false, // 종이 지도 (매장 한눈에 보고 바로 이동)
   freshStamp: null, // 방금 찍힌 매장 (저널 반짝임)
   postcard: null, // { storeId, t } 건물 엽서 부착 연출
   toast: null,
@@ -79,8 +80,12 @@ export const useApp = create((set, get) => ({
   setJournalPage: (journalPage) => set({ journalPage }),
   setComplete: (complete) => set({ complete }),
 
+  openPaperMap: () => set({ paperMap: true }),
+  closePaperMap: () => set({ paperMap: false }),
+
   goToStore(storeId) {
     set({
+      paperMap: false,
       journal: null,
       journalPage: null,
       complete: false,

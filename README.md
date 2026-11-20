@@ -1,7 +1,7 @@
 # SEOCHON WINTER JOURNAL — 서촌 겨울 스탬프 투어 (beta 0.1)
 
 귀여운 지도와 스탬프 투어로 겨울 서촌의 카페·소품샵을 둘러보고, 방문한 순간을 나만의 윈터 저널로 남기는 **모바일 웹**입니다.
-기획서(SW융합프로젝트 조별활동기획서)의 화면 구성·연출·기술 설계를 그대로 따른 베타 버전입니다.
+기획서(SW융합프로젝트 조별활동기획서)의 화면 구성·연출을 따르되, 지도는 3D 대신 2D 도트 마을로 만든 베타 버전입니다.
 
 ## 실행
 
@@ -16,54 +16,47 @@ npm run build      # dist/ 생성 → Vercel / GitHub Pages 에 그대로 배포
 ### 테스트용 주소 옵션
 | 주소 | 설명 |
 |---|---|
-| `/?demo=7` | 7칸을 임시 사진·기록으로 미리 채움 → 마지막 1칸만 찍으면 완성 페이지 확인 가능 |
-| `/?demo=8` | 8칸 모두 채움 (완성 페이지·공유 이미지 바로 확인) |
-| `/?debug` | 콘솔에서 `__debug` 로 카메라·아바타 접근 |
+| `/?demo=7` | 7칸을 임시 사진·기록으로 미리 채움 |
+| `/?demo=17` | 17칸 모두 채움 (완성 페이지·공유 이미지 바로 확인) |
+| `/?debug` | 콘솔에서 `__pixel` 로 카메라·아바타·월드 접근 |
 
 저널 맨 아래 **"기록 초기화 (베타 테스트용)"** 를 두 번 누르면 저장된 기록이 모두 지워집니다.
 
-## 기획서 대비 구현 현황
+## 지금 버전 (도트 마을)
 
-| 기획 항목 | 구현 | 위치 |
+위에서 내려다본 **2D 도트(픽셀) 마을** 지도입니다. 그림은 외부 이미지 없이 전부 코드로 한 픽셀씩 그립니다.
+
+| 항목 | 구현 | 위치 |
 |---|---|---|
-| 2D 일러스트 지도 + 매장만 3D 건물 | ✅ 가운데 큰길 + 양옆 가게 8곳 + 원형 광장 (코드로 그린 임시 지도) | `src/three/mapTexture.js` |
-| 로우폴리 아바타, 골목 시작점 | ✅ 핑크 산타모자·코트 여자아이 (코드로 만든 임시 모델) | `src/three/Avatar.jsx` |
-| 업종별 건물 + 간판 | ✅ 눈 지붕·둥근 간판(문양+이름)·차양 / 업종별 앞마당 소품 | `src/three/Building.jsx` |
-| 거리 소품 | ✅ 눈 덮인 나무, 가로등, 벤치, 꽃덤불, 울타리, 벽돌 언덕, 광장 나무, 이정표 | `src/three/Decor.jsx` |
-| 상단 진행도(3/8) + 저널 아이콘 | ✅ | `src/ui/Hud.jsx` |
-| 첫 진입: 손 흔들고 돌아서 3인칭 시점 | ✅ | `MapScene.jsx` 인트로 타임라인 |
-| 매장 탭 → 통 튀기(0.2s) → 골목 따라 걷기 + 카메라 추적 | ✅ 길 그래프 최단경로 | `src/data/map.js` |
-| 정보 화면: 중앙에서 퍼짐(0.3s), 지도 어두워짐 | ✅ | `src/ui/StoreSheet.jsx` |
-| 스탬프 인증: 문양·사진 촬영/업로드·한 줄 기록·인증 버튼 | ✅ | `src/ui/StampScreen.jsx` |
-| 도장 쾅 + 잉크 번짐 + 햅틱(0.5s) | ✅ (`navigator.vibrate`, iOS 사파리는 미지원) | `styles.css` `.handle/.mark/.ink` |
-| 시트 닫으면 건물 벽에 엽서 부착 + 반짝임(0.4s) | ✅ | `Building.jsx` `Postcard` |
-| 저널: 책 펼침, 새 칸 반짝임 | ✅ | `src/ui/Journal.jsx` |
-| 찍힌 칸 → 일기장 페이지(사진+한 줄), 기록 수정 | ✅ | `DiaryPage` |
-| 빈 칸 → 지도로 돌아가 매장 앞 아바타 가운데로 | ✅ | `goToStore` |
-| 완성 페이지 + 크리스마스 전구 + 이미지 한 장 저장/공유 | ✅ 1080×1920 PNG, Web Share API | `src/lib/shareImage.js` |
-| 눈 내리는 효과, 지붕 위 눈, 창문 불빛 | ✅ | `MapScene.jsx` `Snow` |
-| 종이 질감·마스킹테이프·폴라로이드·손글씨 폰트 | ✅ Gaegu / Gowun Dodum | `styles.css` |
-| 핀치 확대/축소, 드래그 이동, 회전 잠금 | ✅ drei `MapControls` + 직교 카메라(거리 전체가 한 화면에) | |
+| 실제 서촌 지도 | ✅ 구글맵 목록 17곳 + OpenStreetMap 실제 길 (1칸 = 5m, 왜곡 없음) | `src/data/` |
+| 도트 바닥 | ✅ 눈 바닥, 판석 돌길(테두리), 광장, 디딤돌, 얼음 웅덩이, 불빛 | `src/pixel/world.js` |
+| 가게 17곳 | ✅ 6곳은 고유 모양(가방·마시멜로우 한옥·스웨터·고양이·알파카·유리창 카페), 11곳은 가게별 색의 공통 가게, 1.5배 크기 | `src/pixel/sprites.js` |
+| 길가 소품 | ✅ 리본 가로등·눈꽃 배너, 전구 울타리, 화분, 벤치, 눈사람, 그루터기, 간판, 토끼·고양이, 숲 | `src/pixel/world.js` |
+| 아바타 | ✅ 분홍 니트 모자 여자아이 (상하좌우 걷기 · 손 흔들기) | `src/pixel/sprites.js` |
+| 매장 탭 → 통 튀기 → 실제 길 따라 걷기 + 카메라 추적 | ✅ 길 그래프 최단경로 | `src/pixel/PixelMap.jsx` |
+| 종이 지도: 번호 핀 + 목록, 누르면 그 가게 앞으로 이동 | ✅ 오른쪽 아래 지도 버튼 | `src/ui/PaperMap.jsx` |
+| 정보 화면 · 스탬프 인증 · 도장 쾅 · 햅틱 | ✅ | `src/ui/StoreSheet.jsx`, `StampScreen.jsx` |
+| 도장 찍은 가게 벽에 엽서 + 반짝임 | ✅ | `PixelMap.jsx` |
+| 저널 · 일기장 · 완성 페이지 · 공유 이미지(1080×1920) | ✅ | `src/ui/Journal.jsx`, `src/lib/shareImage.js` |
+| 드래그 이동 · 두 손가락/휠 확대 (정수 배율) | ✅ | `PixelMap.jsx` |
 | IndexedDB 저장 | ✅ (막히면 메모리 저장으로 대체) | `src/lib/db.js` |
-| 실시간 날씨 반영 | ⏳ 다음 단계 | |
-| Firebase 기기 간 동기화 | ⏳ `db.js` 의 함수 4개만 교체하면 됨 | |
-| 위치(GPS) 기반 방문 확인 | ⏳ 기획서에 언급만 있어 미구현 | |
+| 실시간 날씨 · Firebase 동기화 · 위치 기반 방문 확인 | ⏳ 다음 단계 | |
 
-## 실제 자료로 교체하는 곳
+지도 데이터 © OpenStreetMap contributors (ODbL) — 화면 왼쪽 아래 표기.
 
-1. **매장 정보** → `src/data/stores.js` 한 파일만 수정 (이름, 소개, 주소, 시간, 간판 문구, 색, 도장 모양).
-   배치는 `side`(큰길 왼쪽 L / 오른쪽 R)와 `row`(0=입구 쪽 ~ 3=광장 쪽)만 정하면 건물 위치·아바타가 서는 자리·길이 자동으로 계산됩니다.
-   차양 색은 `awning`, 모양은 `awningStyle`('stripe' 줄무늬 / 'solid' 단색)로 바꿉니다.
-2. **AI 지도 이미지** → `public/map.png` 로 넣고 `MapScene.jsx` 의 `Ground` 에서 `drawMapCanvas()` 대신 `useTexture('./map.png')` 사용 (비율 36:54 = 2:3).
-3. **Blender 모델(.glb)** → `public/models/` 에 넣고 `Avatar.jsx`, `Building.jsx` 의 `BODY[type]` 를 `useGLTF` 로 교체. 건물 정면은 +z 방향, 바닥은 y=0 기준으로 내보내면 그대로 맞습니다.
-4. **간판 이미지** → `src/three/textures.js` 의 `signTexture` 를 이미지 텍스처로 교체.
+## 고치는 곳
+
+1. **매장 정보** → `src/data/stores.js` (이름·소개·주소·색·도장 모양·`model` 고유 모양). 위치는 위경도만 넣으면 가장 가까운 길 옆에 자동 배치됩니다.
+2. **길** → `src/data/streets.js` 는 자동 생성 파일. 매장이나 출발점을 바꾸면 `scripts/build-streets.mjs` 상단 주석대로 다시 생성하세요.
+3. **도트 그림** → `src/pixel/sprites.js` (가게·나무·소품·아바타), 색은 `src/pixel/palette.js`·`colors.js`.
 
 ## 폴더 구조
 ```
 src/
-  data/      stores.js(매장), map.js(골목 길 그래프·최단경로)
-  three/     MapScene(캔버스·카메라·인트로·걷기), Building, Avatar, mapTexture, textures
-  ui/        Hud, StoreSheet, StampScreen, Journal(저널·일기장·완성 페이지)
+  data/      stores.js(매장), streets.js(길, 자동 생성), layout.js(배치·길 정리), map.js(길 그래프·최단경로)
+  pixel/     PixelMap(캔버스·카메라·걷기·터치), world(바닥·물체 배치), sprites(도트 그림), draw(도트 도구), colors·palette
+  ui/        Hud, PaperMap, StoreSheet, StampScreen, Journal(저널·일기장·완성 페이지)
   lib/       db(IndexedDB), stampSvg(도장 문양), photo(사진 압축), shareImage(공유 이미지)
   store.js   전역 상태 (zustand)
+scripts/     build-streets.mjs (OpenStreetMap → streets.js)
 ```

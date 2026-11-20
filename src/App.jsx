@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react'
-import MapScene from './three/MapScene.jsx'
 import Hud from './ui/Hud.jsx'
 import StoreSheet from './ui/StoreSheet.jsx'
 import StampScreen from './ui/StampScreen.jsx'
@@ -7,6 +6,8 @@ import Journal from './ui/Journal.jsx'
 import { useApp } from './store.js'
 import { STORES } from './data/stores.js'
 import { placeholderPhoto } from './lib/photo.js'
+import PixelMap from './pixel/PixelMap.jsx'
+import PaperMap from './ui/PaperMap.jsx'
 
 const DEMO_NOTES = ['손 시린 날엔 역시 라떼', '엽서 세 장 득템!', '국물이 진짜 따뜻했다', '창밖 인왕산이 하얘', '필름 한 롤 맡기고 옴', '유자차 김이 모락모락', '슈크림 붕어빵 최고']
 
@@ -17,6 +18,7 @@ export default function App() {
   const stampOpen = useApp((s) => s.stampOpen)
   const journal = useApp((s) => s.journal)
   const toast = useApp((s) => s.toast)
+  const paperMap = useApp((s) => s.paperMap)
 
   useEffect(() => {
     ;(async () => {
@@ -34,18 +36,19 @@ export default function App() {
   }, [])
 
   return (
-    <div className="app">
+    <div className="app pixel">
       <div className="scene">
-        <MapScene onReady={() => setReady(true)} />
-        <div className="haze" />
+        <PixelMap onReady={() => setReady(true)} />
       </div>
       <Hud />
+      <div className="osm-credit">지도 데이터 © OpenStreetMap contributors</div>
       {phase === 'intro' && ready && (
         <div className="intro-title">
           <p className="hand small">SEOCHON WINTER JOURNAL</p>
           <h1 className="hand">겨울의 서촌을 기록해요</h1>
         </div>
       )}
+      {paperMap && <PaperMap />}
       {activeStore && <StoreSheet key={activeStore} />}
       {stampOpen && <StampScreen />}
       {journal && <Journal />}

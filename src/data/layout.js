@@ -61,9 +61,54 @@ export function pointAt(poly, t) {
   return { pos: [a[0] + (b[0] - a[0]) * u, a[1] + (b[1] - a[1]) * u], dir: [(b[0] - a[0]) / L, (b[1] - a[1]) / L] }
 }
 
-export function layoutStores(stores) {
+// 길 정리: 한 길처럼 보이게
+//  - 막다른 짧은 가지(6칸 미만) 제거 → 큰길 옆에 혹처럼 튀어나온 부분 없앰
+//  - 막다른 길이 다른 길과 거의 겹쳐 나란히 가면(전 구간이 붙어 있으면) 짧은 쪽 제거 → 두 줄이 한 덩어리로
+//  막다른 길만 지우므로 남은 길끼리의 연결은 그대로, 지워진 길에 붙어 있던 가게는 가장 가까운 남은 길로 옮겨감
+function tidyStreets(list) {
+  let arr = list.map((s) => {
+    const poly = polyInfo(s.pts.map(project))
+    return { s: { ...s }, poly, half: s.main ? HALF_MAIN : HALF_ALLEY, k0: llKey(s.pts[0]), k1: llKey(s.pts[s.pts.length - 1]) }
+  })
+  for (let changed = true; changed && arr.length > 1; ) {
+    changed = false
+    const deg = {}
+    arr.forEach((a) => { deg[a.k0] = (deg[a.k0] || 0) + 1; deg[a.k1] = (deg[a.k1] || 0) + 1 })
+    const ends = arr.filter((a) => a.k0 !== a.k1 && (deg[a.k0] === 1 || deg[a.k1] === 1)).sort((a, b) => a.poly.len - b.poly.len)
+    for (const a of ends) {
+      let redundant = true, along = null
+      for (let t = 0; t <= a.poly.len && redundant; t += 0.5) {
+        const p = pointAt(a.poly, t).pos
+        let best = null
+        for (const o of arr) {
+          if (o === a) continue
+          const c = closest(o.poly, p)
+          if (!best || c.d < best.d) best = { d: c.d, o }
+        }
+        if (!best || best.d > a.half + best.o.half + 2.3) redundant = false // 바로 옆(약 4.5칸 안)을 나란히 가는 막다른 길
+        else along = best.o
+      }
+      if (a.poly.len < 6 || redundant) {
+        arr = arr.filter((o) => o !== a)
+        if (redundant && a.s.main && along) { along.s.main = true; along.half = HALF_MAIN } // 큰길 이름 이어받기
+        changed = true
+        break
+      }
+    }
+  }
+  return arr.map((a) => a.s)
+}
+
+// faceSouth: 위에서 내려다본 2D 라 모든 가게 정면이 남쪽(화면 아래)을 보게
+// tidy: 길 정리 (tidyStreets)
+// shopScale: 가게를 크게 그릴 때 간격·길에서 떨어진 거리·문 앞 자리를 같은 배율로
+export function layoutStores(stores, { faceSouth = false, tidy = false, shopScale = 1 } = {}) {
+  const maxTurn = faceSouth ? 0 : MAX_TURN
+  const kS = shopScale
+  const SETBACK_ = SETBACK * kS, GAP_ = GAP * kS, CLEAR_ = CLEAR * kS, FRONT_ = FRONT_DIST * kS
+  const SRC = tidy ? tidyStreets(STREETS) : STREETS
   // 1) 길 투영 (꼭짓점은 위경도가 같으면 같은 노드)
-  const streets = STREETS.map((s, i) => {
+  const streets = SRC.map((s, i) => {
     const poly = polyInfo(s.pts.map(project))
     const items = s.pts.map((ll, k) => ({ t: poly.cum[k], id: llKey(ll), pos: poly.pts[k] }))
     return { id: 's' + i, name: s.name, main: !!s.main, poly, half: s.main ? HALF_MAIN : HALF_ALLEY, items }
@@ -96,6 +141,8 @@ export function layoutStores(stores) {
         let side = cross >= 0 ? 1 : -1
         if (Math.abs(dir[0]) > 0.6 && side * dir[0] > 0) side = -side // 동서로 난 길 → 북쪽에
         if (s.flip) side = -side
+        // 길의 동쪽/서쪽 중 원하는 쪽 고정 (pixelSide: 'E' | 'W')
+        if (faceSouth && s.pixelSide && Math.abs(dir[1]) > 0.3) side = (s.pixelSide === 'E' ? 1 : -1) * Math.sign(-dir[1])
         return { st, side, t: c.t + (s.shift || 0) }
       })
     Object.assign(s, { _st: s._cands[0].st, _side: s._cands[0].side, _t: s._cands[0].t })
@@ -106,16 +153,16 @@ export function layoutStores(stores) {
   const place = (st, t, side) => {
     const { pos, dir } = pointAt(st.poly, t)
     const n = [-dir[1] * side, dir[0] * side] // 길 → 건물
-    const off = st.half + SETBACK
+    const off = st.half + SETBACK_
     const b = [pos[0] + n[0] * off, pos[1] + n[1] * off]
-    const rot = clamp(Math.atan2(-n[0], -n[1]), -MAX_TURN, MAX_TURN)
+    const rot = clamp(Math.atan2(-n[0], -n[1]), -maxTurn, maxTurn)
     return { pos, b, rot }
   }
   // 자기 길도 포함해서 검사 (휘어진 길이 건물을 다시 지나가는 경우까지 막음)
   const ok = (st, t, cand, clear) =>
     t >= END_PAD && t <= st.poly.len - END_PAD &&
     segDist(cand.b, null) >= clear &&
-    placed.every((o) => Math.hypot(o[0] - cand.b[0], o[1] - cand.b[1]) >= GAP)
+    placed.every((o) => Math.hypot(o[0] - cand.b[0], o[1] - cand.b[1]) >= GAP_)
   // 자리가 좁은 곳(다른 길이 가까운 매장)부터
   const room = (s) => segDist(place(s._st, s._t, s._side).b, null)
   const order = [...stores].sort((a, b) => room(a) - room(b))
@@ -123,12 +170,12 @@ export function layoutStores(stores) {
     let st = s._st
     let found = null
     // 1차: 넉넉한 간격, 2차: 좁은 골목이라 간격을 줄여서
-    for (const clear of [CLEAR, CLEAR * 0.55]) {
+    for (const clear of [CLEAR_, CLEAR_ * 0.55]) {
       for (const cd of s._cands) {
         for (let k = 0; k <= 60 && !found; k++) {
           const dt = k === 0 ? 0 : Math.ceil(k / 2) * 0.5 * (k % 2 ? 1 : -1)
           for (const side of [cd.side, -cd.side]) {
-            if (side !== cd.side && k < 12) continue // 반대편은 근처에 자리가 없을 때만
+            if (side !== cd.side && k < (faceSouth && s.pixelSide ? 40 : 12)) continue // 반대편은 근처에 자리가 없을 때만 (쪽을 고정한 가게는 더 멀리까지 같은 쪽에서 찾음)
             const c = place(cd.st, cd.t + dt, side)
             if (ok(cd.st, cd.t + dt, c, clear)) { found = { ...c, t: cd.t + dt }; st = cd.st; break }
           }
@@ -145,7 +192,7 @@ export function layoutStores(stores) {
     placed.push(found.b)
     s.building = found.b
     s.rot = found.rot
-    s.front = [s.building[0] + Math.sin(s.rot) * FRONT_DIST, s.building[1] + Math.cos(s.rot) * FRONT_DIST]
+    s.front = [s.building[0] + Math.sin(s.rot) * FRONT_, s.building[1] + Math.cos(s.rot) * FRONT_]
     s.side = s.rot > 0.05 ? 'R' : s.rot < -0.05 ? 'L' : s.id.length % 2 ? 'L' : 'R' // 소품 좌우 배치용
     s.attach = found.pos
     st.items.push({ t: found.t, id: 'a_' + s.id, pos: found.pos })
@@ -159,6 +206,7 @@ export function layoutStores(stores) {
     if (!sBest || c.d < sBest.c.d) sBest = { st, c }
   })
   sBest.st.items.push({ t: sBest.c.t, id: 'a_start', pos: sBest.c.pos })
+  if (tidy) S.splice(0, 2, ...sBest.c.pos) // 출발 위치도 길 위로
 
   // 4) 그래프
   const nodes = {}

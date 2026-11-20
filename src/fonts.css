@@ -1,22 +1,16 @@
-/* 손글씨: Gaegu / 본문: Gowun Dodum (한글 서브셋, woff2) */
+/* 픽셀 한글 글꼴: 갈무리11 (Galmuri, SIL OFL 1.1, https://github.com/quiple/galmuri)
+   도트 글꼴은 12px 의 배수(12·24·36…)에서 가장 또렷함 */
 @font-face {
-  font-family: 'Gaegu';
+  font-family: 'Galmuri11';
   font-style: normal;
   font-weight: 400;
   font-display: swap;
-  src: url('@fontsource/gaegu/files/gaegu-korean-400-normal.woff2') format('woff2');
+  src: url('galmuri/dist/Galmuri11.woff2') format('woff2');
 }
 @font-face {
-  font-family: 'Gaegu';
+  font-family: 'Galmuri11';
   font-style: normal;
   font-weight: 700;
   font-display: swap;
-  src: url('@fontsource/gaegu/files/gaegu-korean-700-normal.woff2') format('woff2');
-}
-@font-face {
-  font-family: 'Gowun Dodum';
-  font-style: normal;
-  font-weight: 400;
-  font-display: swap;
-  src: url('@fontsource/gowun-dodum/files/gowun-dodum-korean-400-normal.woff2') format('woff2');
+  src: url('galmuri/dist/Galmuri11-Bold.woff2') format('woff2');
 }

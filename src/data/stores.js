@@ -2,9 +2,11 @@
 // 스탬프 대상 매장 — 구글맵 공유 목록 "서촌겨울스탬프투어" (17곳) 그대로
 //  - lat/lng: 구글맵 좌표 → 가장 가까운 길(streets.js) 옆에 자동 배치
 //  - (선택) shift: 길을 따라 칸 단위로 살짝 옮김, flip: 길 반대편으로 — 배치가 어색할 때만 손보정
+//  - (선택) pixelSide: 길 동('E')/서('W') 어느 쪽에 세울지
 //  - cid: 구글맵 장소 id → 매장 시트의 "구글맵에서 보기" 링크
 //  - category: 구글맵 업종 표기, type: 'cafe' | 'gift' | 'food' → 건물 소품 + 빈 칸 실루엣
 //  - awning / awningStyle: 차양 색과 모양 ('stripe' 줄무늬 | 'solid' 단색)
+//  - model: 가게 고유 모양 (pixel/sprites.js: bag·hanok·sweater·cat·alpaca·glass), 없으면 공통 가게
 //  - stamp: 매장별 도장 문양 (shape + motif, lib/stampSvg.js)
 //  - 건물 좌표(building), 아바타가 서는 자리(front), 회전(rot)은 layout.js 에서 자동 계산
 // ─────────────────────────────────────────────────────────────
@@ -43,6 +45,7 @@ export const STORES = [
   },
   {
     id: 'daechung',
+    model: 'glass',
     name: '인왕산 대충유원지',
     nameEn: 'INWANGSAN DAECHUNG',
     sign: '대충유원지',
@@ -183,8 +186,10 @@ export const STORES = [
   },
   {
     id: 'allight',
+    pixelSide: 'E', // 길 동쪽
+    model: 'cat',
     name: '올라이트 서촌점',
-    nameEn: 'ALLIGHT SEOCHON',
+    nameEn: 'ALLWRITE SEOCHON',
     sign: '올라이트',
     type: 'gift',
     category: '미술용품점',
@@ -197,6 +202,7 @@ export const STORES = [
   },
   {
     id: 'favor',
+    model: 'alpaca',
     name: '서촌 파보르 FAVOR',
     nameEn: 'FAVOR SEOCHON',
     sign: '파보르',
@@ -211,6 +217,8 @@ export const STORES = [
   },
   {
     id: 'vintage',
+    pixelSide: 'W', // 길 서쪽
+    model: 'sweater',
     name: 'VINTAGE UNIVERSE',
     nameEn: 'VINTAGE UNIVERSE',
     sign: 'VINTAGE',
@@ -225,6 +233,7 @@ export const STORES = [
   },
   {
     id: 'dotle',
+    model: 'hanok',
     name: '도틀',
     nameEn: 'DOTLE',
     sign: '도틀',
@@ -239,6 +248,7 @@ export const STORES = [
   },
   {
     id: 'onemore',
+    model: 'bag',
     name: '원모어백',
     nameEn: 'ONE MORE BAG',
     sign: '원모어백',
@@ -255,7 +265,8 @@ export const STORES = [
 STORES.forEach((s) => (s.hours ||= HOURS))
 
 // 위경도 → 건물·입구·회전 + 길 그래프
-export const LAYOUT = layoutStores(STORES)
+// 도트 마을: 가게 정면은 모두 남쪽, 길은 정리해서 한 길처럼, 가게는 1.5배 (pixel/sprites.js SHOP_K 와 같게)
+export const LAYOUT = layoutStores(STORES, { faceSouth: true, tidy: true, shopScale: 1.5 })
 
 export const STORE_BY_ID = Object.fromEntries(STORES.map((s) => [s.id, s]))
 
