@@ -46,7 +46,7 @@ export default function Journal() {
         <div className="rings" aria-hidden="true">{Array.from({ length: 16 }).map((_, i) => <i key={i} />)}</div>
         <div className="pages page-paper">
           <div className="page-head">
-            <p className="sub">SEOCHON WINTER JOURNAL · STAMP PAGE</p>
+            <p className="sub">STAMP PAGE · 도장 모음</p>
             <h2 className="hand">나의 겨울 서촌</h2>
             <p className="count"><b>{String(count).padStart(2, '0')}</b> / {STORES.length} STAMPS</p>
           </div>

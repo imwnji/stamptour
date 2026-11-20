@@ -1,7 +1,7 @@
 /* ─────────────────────────────────────────────────────────────
    SEOCHON WINTER JOURNAL — "도트로 그린 겨울 서촌 일기장"
    한지(종이) · 먹(남색 잉크) · 인주(도장 주홍) · 등불(호박색) · 솔(초록) · 겨울하늘(하늘색)
-   글꼴: 도트(Galmuri11) = 화면이 말하는 글 / 손글씨(Gaegu) = 내가 쓴 글(날짜·기록·메모)
+   글꼴: 전부 도트 — Galmuri11(12·24·36px, 화면 글) / Galmuri14(14·28px, .hand = 내가 쓴 글: 날짜·기록·메모)
    도트 테두리는 src/pixel-frames.css (scripts/build-pixel-frames.mjs 로 생성)
    ───────────────────────────────────────────────────────────── */
 :root {
@@ -21,7 +21,7 @@
   --margin: rgba(209, 75, 53, .42);
 
   --pixel: 'Galmuri11', 'Apple SD Gothic Neo', monospace;
-  --hand: 'Gaegu', 'Galmuri11', 'Apple SD Gothic Neo', cursive;
+  --hand: 'Galmuri14', 'Galmuri11', 'Apple SD Gothic Neo', monospace;
   --body: var(--pixel);
 
   --noise: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 .45  0 0 0 0 .38  0 0 0 0 .28  0 0 0 .08 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
@@ -36,14 +36,13 @@
 html, body, #root { margin: 0; height: 100%; overflow: hidden; background: var(--paper); }
 body { font-family: var(--body); color: var(--ink-2); overscroll-behavior: none; }
 button { font: inherit; color: inherit; border: 0; background: none; cursor: pointer; padding: 0; }
-.hand { font-family: var(--hand); letter-spacing: -.04em; -webkit-font-smoothing: antialiased; }
+.hand { font-family: var(--hand); font-weight: 400; font-synthesis: none; } /* Galmuri14: 14px 배수(14·28)에서 또렷 */
 
 .app { position: fixed; inset: 0; overflow: hidden; word-break: keep-all; }
 .scene { position: absolute; inset: 0; touch-action: none; }
 .pixel-canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; touch-action: none; image-rendering: pixelated; }
 /* 도트 글꼴은 흐림 없이 */
 .app { -webkit-font-smoothing: none; -moz-osx-font-smoothing: unset; font-smooth: never; }
-.app .hand { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
 
 /* ── 종이 ── */
 .paper { background: var(--paper) var(--noise); }
@@ -99,7 +98,7 @@ button { font: inherit; color: inherit; border: 0; background: none; cursor: poi
   animation: bookBob 1.6s steps(2) infinite;
 }
 .loading-book .cover-label { transform: scale(.82) rotate(-2deg); }
-.loading p { margin: 0; font-size: 26px; color: var(--ink); }
+.loading p { margin: 0; font-size: 28px; color: var(--ink); }
 .loading .flake { display: inline-block; margin-left: 6px; color: var(--red); font-family: var(--pixel); font-size: 18px; animation: spin 3s steps(8) infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
 @keyframes bookBob { 50% { transform: translateY(-3px); } }
@@ -111,7 +110,7 @@ button { font: inherit; color: inherit; border: 0; background: none; cursor: poi
   background: var(--card) var(--noise); box-shadow: 0 0 0 2px var(--ink), 5px 5px 0 rgba(39, 42, 64, .25);
   animation: introFade 2.9s ease forwards;
 }
-.intro-title h1 { margin: 2px 0 0; font-size: 34px; font-weight: 700; color: var(--ink); line-height: 1.1; }
+.intro-title h1 { margin: 6px 0 0; font-size: 28px; font-weight: 400; color: var(--ink); line-height: 1.1; }
 .intro-title .small { margin: 0; font-size: 12px; letter-spacing: 2px; color: var(--red); font-weight: 700; }
 @keyframes introFade {
   0% { opacity: 0; transform: translate(-50%, 10px) rotate(-1.5deg); }
@@ -130,8 +129,8 @@ button { font: inherit; color: inherit; border: 0; background: none; cursor: poi
 .brand { position: relative; display: flex; flex-direction: column; justify-content: center; gap: 1px; margin-right: auto; min-width: 0; padding: 2px 6px 0; }
 .brand-tape { width: 34px; height: 14px; left: -8px; top: -9px; margin: 0; transform: rotate(-24deg); }
 .brand-en { font-size: 12px; font-weight: 700; letter-spacing: 0; color: var(--red); white-space: nowrap; }
-.brand b { font-size: 21px; font-weight: 700; color: var(--ink); line-height: 1.05; white-space: nowrap; }
-.weather { font-family: var(--pixel); font-size: 12px; color: var(--navy); display: inline-block; padding: 0 3px; box-shadow: 0 0 0 1.5px var(--navy); border-radius: 50%; vertical-align: 2px; }
+.brand b { font-size: 14px; font-weight: 400; color: var(--ink); line-height: 1.05; white-space: nowrap; }
+.weather { display: inline-block; width: 16px; height: 15px; margin-left: 3px; vertical-align: -2px; fill: #6FA0D0; }
 .progress { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; padding: 0 4px; color: var(--ink); }
 .progress-n { font-size: 12px; line-height: 1; color: var(--ink-3); }
 .progress-n b { font-size: 18px; color: var(--ink); }
@@ -153,7 +152,7 @@ button { font: inherit; color: inherit; border: 0; background: none; cursor: poi
   animation: memoBob 2.4s steps(2) infinite;
 }
 .hint .tape { width: 40px; height: 14px; top: -10px; left: 12px; margin: 0; }
-.hint .hand { display: block; font-size: 22px; line-height: 1.25; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.hint .hand { display: block; font-size: 14px; line-height: 1.6; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 @keyframes memoBob { 50% { transform: translate(-50%, -3px) rotate(-1deg); } }
 
 .map-fab {
@@ -189,10 +188,10 @@ button { font: inherit; color: inherit; border: 0; background: none; cursor: poi
 .polaroid { position: relative; background: #FFFEFA; padding: 8px 8px 30px; box-shadow: 0 0 0 2px #E4DACA, 4px 4px 0 rgba(39, 42, 64, .18); }
 .polaroid img, .polaroid .ph { display: block; width: 100%; aspect-ratio: 1; object-fit: cover; background: #ECE6DA; }
 .polaroid .ph {
-  display: grid; place-items: center; color: #A99F8F; font-size: 22px;
+  display: grid; place-items: center; color: #A99F8F; font-size: 14px;
   background: #ECE6DA repeating-linear-gradient(45deg, transparent 0 8px, rgba(255, 255, 255, .45) 8px 10px);
 }
-.polaroid .cap { position: absolute; bottom: 4px; left: 0; right: 0; text-align: center; font-size: 20px; color: var(--ink-2); }
+.polaroid .cap { position: absolute; bottom: 7px; left: 0; right: 0; text-align: center; font-size: 14px; color: var(--ink-2); }
 .tilt-l { transform: rotate(-3deg); }
 .tilt-r { transform: rotate(2.5deg); }
 
@@ -244,10 +243,10 @@ button { font: inherit; color: inherit; border: 0; background: none; cursor: poi
 .slot.stamped { outline-color: transparent; background: none; }
 .slot.stamped .slot-label { color: var(--red); }
 .slot.stamped img { width: 130px; height: 130px; transform: rotate(-6deg); mix-blend-mode: multiply; }
-.slot .date { font-size: 22px; color: var(--ink); margin-top: -8px; }
+.slot .date { font-size: 14px; color: var(--ink); margin-top: -6px; }
 .slot.fresh { animation: glow 1.4s steps(4) 2; }
 @keyframes glow { 50% { box-shadow: 0 0 0 6px rgba(244, 184, 96, .7); } }
-.foot { text-align: center; margin: 10px 0 0; font-size: 20px; line-height: 1.2; color: var(--ink-3); }
+.foot { text-align: center; margin: 10px 0 0; font-size: 14px; line-height: 1.5; color: var(--ink-3); }
 
 /* ── 스탬프 인증 · 일기 페이지 ── */
 .stamp-screen, .diary {
@@ -259,7 +258,7 @@ button { font: inherit; color: inherit; border: 0; background: none; cursor: poi
 .ss-head { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 16px; }
 .ss-head .sub { margin: 4px 0 0; font-size: 12px; font-weight: 700; letter-spacing: 1px; color: var(--red); }
 .ss-head h3 { margin: 4px 0 0; font-size: 24px; font-weight: 700; line-height: 1.1; color: var(--ink); }
-.ss-head .when { margin: 2px 0 0; font-size: 22px; color: var(--ink-2); }
+.ss-head .when { margin: 4px 0 0; font-size: 14px; color: var(--ink-2); }
 
 .stamp-pad { position: relative; height: 212px; display: grid; place-items: center; overflow: visible; margin-bottom: 26px; }
 .stamp-pad .slot-label { top: 2px; left: 4px; }
@@ -296,13 +295,13 @@ button { font: inherit; color: inherit; border: 0; background: none; cursor: poi
 .note { position: relative; display: block; margin-bottom: 20px; }
 .note > span { display: inline-block; font-size: 12px; font-weight: 700; color: #fff; background: var(--ink); padding: 1px 6px; margin-bottom: 4px; }
 .note input {
-  width: 100%; font-size: 26px; padding: 4px 2px 6px; border: 0; color: var(--ink); outline: none;
+  width: 100%; font-size: 28px; padding: 4px 2px 6px; border: 0; color: var(--ink); outline: none;
   background: transparent; border-bottom: 2px solid var(--rule);
 }
 .note input::placeholder { color: #B9B2A5; }
 .note em { position: absolute; right: 0; top: 2px; font-size: 12px; color: var(--ink-3); font-style: normal; }
 .done-box { text-align: center; padding-top: 4px; }
-.done-box .big { font-size: 34px; font-weight: 700; color: var(--red); margin: 0; }
+.done-box .big { font-size: 28px; color: var(--red); margin: 0; }
 .done-box .primary { margin-top: 18px; }
 
 /* ── 윈터 저널 ── */
@@ -319,7 +318,7 @@ button { font: inherit; color: inherit; border: 0; background: none; cursor: poi
 .rings i::after { content: ''; display: block; width: 6px; height: 6px; margin: 1px 0 0 16px; background: var(--ink); }
 .page-head { text-align: center; margin-bottom: 18px; }
 .page-head .sub { margin: 0; font-size: 12px; font-weight: 700; letter-spacing: 1px; color: var(--red); }
-.page-head h2 { margin: 2px 0 0; font-size: 36px; font-weight: 700; color: var(--ink); line-height: 1.1; }
+.page-head h2 { margin: 6px 0 0; font-size: 28px; color: var(--ink); line-height: 1.1; }
 .page-head .count { display: inline-block; margin: 6px 0 0; padding: 0 6px; font-size: 12px; color: var(--ink-2); box-shadow: inset 0 0 0 2px var(--ink-2); }
 .page-head .count b { color: var(--red); }
 .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px 12px; }
@@ -329,7 +328,7 @@ button { font: inherit; color: inherit; border: 0; background: none; cursor: poi
 .cell:not(.on) .cell-no { top: 2px; left: 4px; color: #B9AE9C; }
 .cell img { width: 96px; height: 96px; mix-blend-mode: multiply; }
 .cell .sil { width: 54px; height: 54px; margin: 18px 0 16px; color: #B9AE9C; opacity: .5; }
-.cell .date { font-size: 21px; margin-top: -2px; color: var(--ink); line-height: 1.1; }
+.cell .date { font-size: 14px; margin-top: 0; color: var(--ink); line-height: 1.3; }
 .cell .dim-t { font-size: 12px; color: #B9AE9C; }
 .cell-name { font-size: 12px; color: var(--ink-2); margin-top: 3px; text-align: center; line-height: 1.3; }
 .cell.fresh { animation: sparkle 1s steps(3) .5s 3; }
@@ -337,7 +336,7 @@ button { font: inherit; color: inherit; border: 0; background: none; cursor: poi
 @keyframes sparkle { 50% { box-shadow: 0 0 0 5px rgba(244, 184, 96, .8); } }
 @keyframes twinkle { to { transform: scale(1.5) rotate(30deg); opacity: .4; } }
 .journal-foot { margin-top: 22px; text-align: center; }
-.journal-foot p { margin: 0; font-size: 21px; }
+.journal-foot p { margin: 0; font-size: 14px; line-height: 1.5; }
 .reset { margin-top: 18px; font-size: 12px; color: #B0A493; text-decoration: underline; }
 
 /* 표지: 남색 천 + 스티치 + 주홍 고무줄 + 종이 라벨 */
@@ -363,7 +362,7 @@ button { font: inherit; color: inherit; border: 0; background: none; cursor: poi
 }
 .cover-label small { display: block; white-space: nowrap; font-size: 12px; letter-spacing: 1px; color: var(--red); font-weight: 700; }
 .cover-label h1 { margin: 6px 0; font-size: 24px; line-height: 1.15; letter-spacing: 2px; font-weight: 700; }
-.cover-label p { margin: 0; font-size: 19px; color: var(--ink-2); }
+.cover-label p { margin: 0; font-size: 14px; color: var(--ink-2); }
 .cover-flakes { font-size: 36px; color: var(--sky); line-height: 1; }
 .cover-count { position: absolute; bottom: 26px; font-size: 12px; letter-spacing: 2px; color: rgba(247, 242, 232, .75); }
 
@@ -380,7 +379,7 @@ button { font: inherit; color: inherit; border: 0; background: none; cursor: poi
 .polaroid.big { width: 82%; margin: 0 auto; }
 .photo-wrap { position: relative; }
 .diary-stamp { position: absolute; right: -10px; bottom: -46px; width: 108px; transform: rotate(10deg); z-index: 2; mix-blend-mode: multiply; }
-.diary-note { font-size: 26px; color: var(--ink); line-height: 34px; margin: 52px 90px 10px 0; min-height: 68px; }
+.diary-note { font-size: 28px; color: var(--ink); line-height: 34px; margin: 52px 90px 10px 0; min-height: 68px; }
 .edit-btn { margin-top: 6px; }
 .edit { margin-top: 34px; }
 .row { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
@@ -391,7 +390,7 @@ button { font: inherit; color: inherit; border: 0; background: none; cursor: poi
 .cb { position: absolute; top: calc(56px + var(--safe-t)); left: 14px; }
 .complete .sub { margin: 0; color: var(--red); letter-spacing: 1px; font-size: 12px; font-weight: 700; }
 .complete h2 { margin: 6px 0 2px; font-size: 36px; font-weight: 700; color: var(--ink); }
-.complete .muted { margin: 0 0 18px; font-size: 22px; }
+.complete .muted { margin: 4px 0 18px; font-size: 14px; }
 /* 도트 전구 줄 */
 .lights { position: absolute; left: 0; right: 0; top: var(--safe-t); height: 46px; display: flex; justify-content: space-around; max-width: none;
   background: linear-gradient(var(--ink), var(--ink)) 0 14px / 100% 2px no-repeat; }
@@ -415,12 +414,12 @@ button { font: inherit; color: inherit; border: 0; background: none; cursor: poi
 .pm-tape { top: -6px; }
 .pm-head { text-align: center; margin-bottom: 10px; }
 .pm-head h2 { margin: 0; font-size: 24px; font-weight: 700; color: var(--ink); line-height: 1.1; }
-.pm-head p { margin: 2px 0 0; font-size: 19px; color: var(--ink-3); }
+.pm-head p { margin: 4px 0 0; font-size: 14px; color: var(--ink-3); }
 .pm-body { display: flex; gap: 10px; align-items: flex-start; }
 .pm-map { position: relative; flex: none; background: var(--grid), rgba(255,255,255,.4); box-shadow: 0 0 0 2px #D9CDB8; }
 .pm-map canvas { position: absolute; inset: 0; width: 100%; height: 100%; image-rendering: pixelated; }
 .pm-compass { position: absolute; right: 4px; top: 2px; font-size: 12px; font-weight: 700; color: var(--red); }
-.pm-start { position: absolute; transform: translate(-100%, -50%); font-size: 18px; color: var(--red); white-space: nowrap; pointer-events: none; }
+.pm-start { position: absolute; transform: translate(-100%, -50%); font-size: 14px; color: var(--red); white-space: nowrap; pointer-events: none; }
 .pm-pin {
   position: absolute; transform: translate(-50%, -50%); width: 19px; height: 19px; padding: 0;
   color: #fff; font: 700 12px/19px var(--pixel); text-align: center; box-shadow: 0 0 0 1.5px #fff, 0 0 0 3px var(--ink); z-index: 1;

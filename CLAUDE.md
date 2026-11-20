@@ -11,7 +11,7 @@ UI 문구·주석은 한국어. 세로 모바일(390×844) 우선.
 
 ## 스택
 React 18 + Vite 5, Canvas2D(도트 렌더), zustand, IndexedDB.
-폰트: Galmuri11(도트, 화면이 말하는 글: 제목·버튼·안내) + Gaegu(손글씨, 내가 쓴 글: 날짜·한 줄 기록·메모, `.hand`) — `src/fonts.css`.
+폰트: 전부 도트(갈무리) — Galmuri11(화면 글: 제목·버튼·안내, 12·24·36px) + Galmuri14(내가 쓴 글: 날짜·한 줄 기록·메모, `.hand`, 14·28px). `src/fonts.css`. 굵게는 Galmuri11 Bold 만 (14 는 가짜 굵기 금지).
 
 ## 디자인 컨셉: "도트로 그린 겨울 서촌 일기장"
 - 색: 한지(종이) `#F7F2E8` · 먹 `#272A40` · 인주 주홍 `#D14B35` · 등불 `#F4B860` · 솔 `#3B6655` · 겨울하늘 `#AFC3DA` · 남색 표지 `#43507A`. 지도는 `src/pixel/palette.js`, UI 는 `styles.css` 의 `:root` 변수.

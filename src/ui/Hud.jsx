@@ -2,6 +2,32 @@ import { useApp } from '../store.js'
 import { STORES, STORE_BY_ID } from '../data/stores.js'
 import { diaryDate } from '../lib/photo.js'
 
+// 날씨 아이콘: 16x15 도트 눈송이 (칸 하나 = 1px, 굵은 가지 6갈래)
+const SNOW = [
+  '.......XX.......',
+  '......XXXX......',
+  '..X.X..XX..X.X..',
+  '...XX..XX..XX...',
+  '..XXXX.XX.XXXX..',
+  '.....XXXXXX.....',
+  '.X....XXXX....X.',
+  'XXXXXXXXXXXXXXXX',
+  '.X....XXXX....X.',
+  '.....XXXXXX.....',
+  '..XXXX.XX.XXXX..',
+  '...XX..XX..XX...',
+  '..X.X..XX..X.X..',
+  '......XXXX......',
+  '.......XX.......',
+]
+function SnowIcon() {
+  return (
+    <svg className="weather" viewBox="0 0 16 15" width="16" height="15" shapeRendering="crispEdges" role="img" aria-label="눈">
+      {SNOW.flatMap((row, y) => [...row].map((c, x) => (c === 'X' ? <rect key={x + '-' + y} x={x} y={y} width="1" height="1" /> : null)))}
+    </svg>
+  )
+}
+
 // 지도 위 일기장 머리말: 왼쪽 = 오늘 날짜를 적은 라벨, 오른쪽 = 도장 카드(진행도) + 저널
 export default function Hud() {
   const phase = useApp((s) => s.phase)
@@ -19,7 +45,7 @@ export default function Hud() {
         <div className="brand">
           <span className="tape tape-red brand-tape" />
           <span className="brand-en">SEOCHON WINTER JOURNAL</span>
-          <b className="hand">{diaryDate()} <span className="weather" aria-label="눈">❄</span></b>
+          <b className="hand">{diaryDate()} <SnowIcon /></b>
         </div>
         <button className="progress" onClick={openJournal} aria-label={`도장 ${count}개 / ${STORES.length}개`}>
           <span className="progress-n"><b>{String(count).padStart(2, '0')}</b>/{STORES.length}</span>

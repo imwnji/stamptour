@@ -49,7 +49,7 @@ function coverDraw(c, img, x, y, w, h) {
 }
 
 export async function renderJournalImage(stamps) {
-  try { await Promise.all([document.fonts.load('700 40px Galmuri11'), document.fonts.load('400 40px Gaegu'), document.fonts.load('400 40px Gaegu', '가')]) } catch {}
+  try { await Promise.all([document.fonts.load('700 40px Galmuri11'), document.fonts.load('400 28px Galmuri14'), document.fonts.load('400 28px Galmuri14', '가')]) } catch {}
   const cv = document.createElement('canvas')
   cv.width = W
   cv.height = H
@@ -99,7 +99,7 @@ export async function renderJournalImage(stamps) {
   fitFont(c, 'SEOCHON WINTER JOURNAL', 700, 84, W - 120)
   c.fillText('SEOCHON WINTER JOURNAL', W / 2, 235)
   c.fillStyle = '#4A4E68'
-  c.font = '400 52px Gaegu'
+  c.font = '400 42px Galmuri14'
   const done = STORES.filter((s) => stamps[s.id]).length
   c.fillText(`겨울의 서촌을 기록하다  ·  ${done} / ${STORES.length}`, W / 2, 285)
 
@@ -138,7 +138,7 @@ export async function renderJournalImage(stamps) {
       c.fillRect(-96, -116, 192, 192)
     }
     c.fillStyle = '#272A40'
-    c.font = '400 40px Gaegu'
+    c.font = '400 28px Galmuri14'
     c.fillText(rec ? fmtDate(rec.date, false) : '—', 0, 114)
     // 테이프
     c.fillStyle = ['rgba(240,194,122,0.85)', 'rgba(159,184,214,0.85)', 'rgba(224,122,99,0.8)', 'rgba(143,179,160,0.85)'][i % 4]
@@ -160,9 +160,9 @@ export async function renderJournalImage(stamps) {
     fitFont(c, s.name, 700, 36, 205)
     c.fillText(s.name, x + 340, y + 222)
     c.fillStyle = '#4A4E68'
-    c.font = '400 36px Gaegu'
+    c.font = '400 28px Galmuri14'
     const lines = wrap(c, rec?.note || '', 215, 2)
-    lines.forEach((ln, k) => c.fillText(ln, x + 340, y + 264 + k * 36))
+    lines.forEach((ln, k) => c.fillText(ln, x + 340, y + 262 + k * 34))
     c.restore()
   })
 

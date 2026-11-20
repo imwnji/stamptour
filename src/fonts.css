@@ -15,36 +15,11 @@
   src: url('galmuri/dist/Galmuri11-Bold.woff2') format('woff2');
 }
 
-/* 손글씨: 개구 (Gaegu, SIL OFL 1.1) — 날짜·한 줄 기록·메모처럼 "내가 쓴" 글 */
+/* 기록용 도트 글꼴: 갈무리14 — 날짜·한 줄 기록·메모 (.hand). 14px 의 배수(14·28)에서 또렷 */
 @font-face {
-  font-family: 'Gaegu';
+  font-family: 'Galmuri14';
   font-style: normal;
   font-weight: 400;
   font-display: swap;
-  src: url('@fontsource/gaegu/files/gaegu-korean-400-normal.woff2') format('woff2');
-  unicode-range: U+1100-11FF, U+3130-318F, U+A960-A97F, U+AC00-D7A3, U+D7B0-D7FF;
-}
-@font-face {
-  font-family: 'Gaegu';
-  font-style: normal;
-  font-weight: 400;
-  font-display: swap;
-  src: url('@fontsource/gaegu/files/gaegu-latin-400-normal.woff2') format('woff2');
-  unicode-range: U+0000-00FF, U+2000-206F, U+2190-21FF;
-}
-@font-face {
-  font-family: 'Gaegu';
-  font-style: normal;
-  font-weight: 700;
-  font-display: swap;
-  src: url('@fontsource/gaegu/files/gaegu-korean-700-normal.woff2') format('woff2');
-  unicode-range: U+1100-11FF, U+3130-318F, U+A960-A97F, U+AC00-D7A3, U+D7B0-D7FF;
-}
-@font-face {
-  font-family: 'Gaegu';
-  font-style: normal;
-  font-weight: 700;
-  font-display: swap;
-  src: url('@fontsource/gaegu/files/gaegu-latin-700-normal.woff2') format('woff2');
-  unicode-range: U+0000-00FF, U+2000-206F, U+2190-21FF;
+  src: url('galmuri/dist/Galmuri14.woff2') format('woff2');
 }
