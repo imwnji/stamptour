@@ -38,7 +38,7 @@ function drawMap(cv, k) {
     c.fillStyle = C.woodDark; c.fillRect(px, py + 1, 1, 1)
   }
   // 배경 골목
-  c.strokeStyle = '#DACDB5'
+  c.strokeStyle = C.pathSoft
   c.lineWidth = Math.max(1, BG_HALF * 2 * k)
   BG_STREETS.forEach(line)
   // 걷는 길 (테두리 → 흙색 → 큰길 가운데 돌)
@@ -97,10 +97,10 @@ export default function PaperMap() {
   return (
     <div className="pm-dim" onClick={close}>
       <div className="pm-card paper" onClick={(e) => e.stopPropagation()} role="dialog" aria-label="서촌 종이 지도">
-        <span className="tape t2 pm-tape" />
+        <span className="tape tape-blue pm-tape" />
         <button className="x" onClick={close} aria-label="지도 닫기">✕</button>
         <div className="pm-head">
-          <h2 className="hand">서촌 겨울 지도</h2>
+          <h2>서촌 겨울 지도</h2>
           <p className="hand">가게를 누르면 바로 그 앞으로 데려다줄게요</p>
         </div>
         <div className="pm-body" ref={body}>
@@ -108,7 +108,7 @@ export default function PaperMap() {
             <canvas ref={cv} />
             {size && (
               <>
-                <span className="pm-compass hand">N ↑</span>
+                <span className="pm-compass">N↑</span>
                 <span className="pm-start hand" style={at(start[0] - 1.6, start[1])}>출발</span>
                 <span className="pm-me" style={at(me[0], me[1])} aria-label="지금 위치"><i />나</span>
                 {LIST.map((s, i) => (

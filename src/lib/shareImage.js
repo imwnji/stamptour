@@ -49,33 +49,31 @@ function coverDraw(c, img, x, y, w, h) {
 }
 
 export async function renderJournalImage(stamps) {
-  try { await document.fonts.load('700 40px Galmuri11') } catch {}
+  try { await Promise.all([document.fonts.load('700 40px Galmuri11'), document.fonts.load('400 40px Gaegu'), document.fonts.load('400 40px Gaegu', '가')]) } catch {}
   const cv = document.createElement('canvas')
   cv.width = W
   cv.height = H
   const c = cv.getContext('2d')
 
   // 종이
-  c.fillStyle = '#f6f0e4'
+  c.fillStyle = '#F7F2E8'
   c.fillRect(0, 0, W, H)
   for (let i = 0; i < 14000; i++) {
     c.fillStyle = Math.random() < 0.5 ? 'rgba(120,100,70,0.05)' : 'rgba(255,255,255,0.5)'
     c.fillRect(Math.random() * W, Math.random() * H, 2, 2)
   }
-  // 모눈
-  c.strokeStyle = 'rgba(120,140,170,0.12)'
-  c.lineWidth = 1
-  for (let x = 0; x < W; x += 40) { c.beginPath(); c.moveTo(x, 0); c.lineTo(x, H); c.stroke() }
-  for (let y = 0; y < H; y += 40) { c.beginPath(); c.moveTo(0, y); c.lineTo(W, y); c.stroke() }
+  // 일기장 도트 그리드 (지도 바닥·앱 종이와 같은 무늬)
+  c.fillStyle = '#CBD2DC'
+  for (let x = 20; x < W; x += 40) for (let y = 20; y < H; y += 40) c.fillRect(x - 2, y - 2, 5, 5)
 
-  // 크리스마스 전구
-  c.strokeStyle = '#3d4a3d'
-  c.lineWidth = 3
+  // 크리스마스 전구 (도트)
+  c.strokeStyle = '#272A40'
+  c.lineWidth = 4
   c.beginPath()
   c.moveTo(0, 40)
   for (let x = 0; x <= W; x += 10) c.lineTo(x, 40 + Math.sin((x / W) * Math.PI * 3) * 22 + 30)
   c.stroke()
-  const bulbs = ['#ff5a5a', '#ffd25a', '#5ad1ff', '#7be37b', '#ff8ad8']
+  const bulbs = ['#D14B35', '#F4B860', '#7FA9D6', '#6FA58A']
   for (let i = 0; i < 16; i++) {
     const x = 30 + i * 68
     const y = 40 + Math.sin((x / W) * Math.PI * 3) * 22 + 30
@@ -85,19 +83,23 @@ export async function renderJournalImage(stamps) {
     g.addColorStop(1, col + '00')
     c.fillStyle = g
     c.beginPath(); c.arc(x, y + 22, 40, 0, 7); c.fill()
-    c.fillStyle = '#556'
-    c.fillRect(x - 6, y, 12, 10)
+    c.fillStyle = '#272A40'
+    c.fillRect(x - 7, y, 14, 10)
+    c.fillRect(x - 13, y + 10, 26, 34)
     c.fillStyle = col
-    c.beginPath(); c.ellipse(x, y + 24, 11, 16, 0, 0, 7); c.fill()
+    c.fillRect(x - 9, y + 14, 18, 26)
   }
 
   // 제목
   c.textAlign = 'center'
-  c.fillStyle = '#34405e'
-  c.font = '700 84px Galmuri11'
-  c.fillText('SEOCHON WINTER JOURNAL', W / 2, 220)
-  c.fillStyle = '#7a6a58'
-  c.font = '700 44px Galmuri11'
+  c.fillStyle = '#D14B35'
+  c.font = '700 36px Galmuri11'
+  c.fillText('2026 — 2027 WINTER', W / 2, 150)
+  c.fillStyle = '#272A40'
+  fitFont(c, 'SEOCHON WINTER JOURNAL', 700, 84, W - 120)
+  c.fillText('SEOCHON WINTER JOURNAL', W / 2, 235)
+  c.fillStyle = '#4A4E68'
+  c.font = '400 52px Gaegu'
   const done = STORES.filter((s) => stamps[s.id]).length
   c.fillText(`겨울의 서촌을 기록하다  ·  ${done} / ${STORES.length}`, W / 2, 285)
 
@@ -135,11 +137,11 @@ export async function renderJournalImage(stamps) {
       c.fillStyle = '#e9e4da'
       c.fillRect(-96, -116, 192, 192)
     }
-    c.fillStyle = '#5d5348'
-    c.font = '700 30px Galmuri11'
-    c.fillText(rec ? fmtDate(rec.date, false) : '—', 0, 112)
+    c.fillStyle = '#272A40'
+    c.font = '400 40px Gaegu'
+    c.fillText(rec ? fmtDate(rec.date, false) : '—', 0, 114)
     // 테이프
-    c.fillStyle = ['rgba(240,200,120,0.8)', 'rgba(170,205,230,0.8)', 'rgba(240,170,170,0.8)'][i % 3]
+    c.fillStyle = ['rgba(240,194,122,0.85)', 'rgba(159,184,214,0.85)', 'rgba(224,122,99,0.8)', 'rgba(143,179,160,0.85)'][i % 4]
     c.rotate(-tilt * 3)
     c.fillRect(-48, -146, 96, 32)
     c.restore()
@@ -157,16 +159,16 @@ export async function renderJournalImage(stamps) {
     c.fillStyle = s.color
     fitFont(c, s.name, 700, 36, 205)
     c.fillText(s.name, x + 340, y + 222)
-    c.fillStyle = '#5d5348'
-    c.font = '400 28px Galmuri11'
-    const lines = wrap(c, rec?.note || '', 205, 2)
-    lines.forEach((ln, k) => c.fillText(ln, x + 340, y + 262 + k * 32))
+    c.fillStyle = '#4A4E68'
+    c.font = '400 36px Gaegu'
+    const lines = wrap(c, rec?.note || '', 215, 2)
+    lines.forEach((ln, k) => c.fillText(ln, x + 340, y + 264 + k * 36))
     c.restore()
   })
 
   c.textAlign = 'center'
-  c.fillStyle = '#8a7b68'
-  c.font = '700 38px Galmuri11'
+  c.fillStyle = '#D14B35'
+  c.font = '700 36px Galmuri11'
   c.fillText('#서촌겨울스탬프투어  #SEOCHONWINTERJOURNAL', W / 2, H - 60)
 
   return new Promise((resolve) => cv.toBlob((b) => resolve(b), 'image/png'))

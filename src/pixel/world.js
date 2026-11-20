@@ -320,10 +320,10 @@ function drawGround({ objs, lamps, prints }, walkC) {
   const img = g.createImageData(GW, GH)
   const out = new Uint32Array(img.data.buffer)
   const P = {
-    snow: u32(C.snow), snowHi: u32(C.snowHi), snowMid: u32(C.snowMid), snowShade: u32('#D3DCDD'),
+    snow: u32(C.snow), snowHi: u32(C.snowHi), snowMid: u32(C.snowMid), snowShade: u32('#D5DCE4'), grid: u32(C.grid),
     path: u32(C.path), pathL: u32(C.pathLight), pathD: u32(C.pathDark), pathDD: u32(C.pathDeep),
-    bg: u32(C.pathSoft), bgD: u32('#DDD3C0'),
-    stone: u32(C.pathLight), stone2: u32('#DACCB2'), mortar: u32(C.pathDark),
+    bg: u32(C.pathSoft), bgD: u32('#D8D5CD'),
+    stone: u32(C.pathLight), stone2: u32('#D6CDBF'), mortar: u32(C.pathDark),
   }
   const K0 = (x, y) => (x < 0 || y < 0 || x >= GW || y >= GH ? 0 : kind[y * GW + x])
   const K = (x, y) => { const k = K0(x, y); return k === 4 || k === 5 ? 1 : k } // 경계 판정에선 돌길도 길
@@ -359,6 +359,7 @@ function drawGround({ objs, lamps, prints }, walkC) {
       } else {
         if (K(x, y + 1) === 1) col = P.snowHi // 길 바로 위 눈둑 하이라이트
         else if (K(x, y - 1) === 1) col = P.snowShade // 길 아래쪽 가장자리 그늘
+        else if (((x & 15) === 7 || (x & 15) === 8) && ((y & 15) === 7 || (y & 15) === 8)) col = P.grid // 일기장 도트 그리드 (1칸 = 점 하나)
         else col = h < 0.012 ? P.snowMid : h < 0.02 ? P.snowHi : P.snow
       }
       out[i] = col

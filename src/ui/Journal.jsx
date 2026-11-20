@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { useApp } from '../store.js'
 import { STORES, STORE_BY_ID } from '../data/stores.js'
 import { stampUrl, SILHOUETTE } from '../lib/stampSvg.js'
-import { fmtDate, fileToDataUrl } from '../lib/photo.js'
+import { fmtDate, fileToDataUrl, diaryDate } from '../lib/photo.js'
 import { renderJournalImage } from '../lib/shareImage.js'
 
 const TILT = [-5, 4, -2, 6, 3, -6, 5, -3]
@@ -14,7 +14,7 @@ const IN_FRAME = (() => {
     return true
   }
 })()
-const TAPES = ['t1', 't2', 't3']
+const TAPES = ['tape-red', 'tape-blue', 'tape-amber', 'tape-pine']
 
 export default function Journal() {
   const stamps = useApp((s) => s.stamps)
@@ -43,11 +43,12 @@ export default function Journal() {
     <div className="journal">
       <button className="x jx" onClick={closeJournal} aria-label="저널 닫기">✕</button>
       <div className="book">
-        <div className="pages paper">
+        <div className="rings" aria-hidden="true">{Array.from({ length: 16 }).map((_, i) => <i key={i} />)}</div>
+        <div className="pages page-paper">
           <div className="page-head">
-            <p className="hand sub">나의 겨울 서촌 일기</p>
-            <h2 className="hand">Winter Journal</h2>
-            <p className="hand count">{count} / {STORES.length} 칸</p>
+            <p className="sub">SEOCHON WINTER JOURNAL · STAMP PAGE</p>
+            <h2 className="hand">나의 겨울 서촌</h2>
+            <p className="count"><b>{String(count).padStart(2, '0')}</b> / {STORES.length} STAMPS</p>
           </div>
           <div className="grid">
             {STORES.map((s, i) => {
@@ -58,7 +59,8 @@ export default function Journal() {
                   className={'cell' + (rec ? ' on' : '') + (opened && fresh === s.id ? ' fresh' : '')}
                   onClick={() => (rec ? setJournalPage(s.id) : goToStore(s.id))}
                 >
-                  <span className={'tape ' + TAPES[i % 3]} />
+                  {rec && <span className={'tape ' + TAPES[i % TAPES.length]} />}
+                  <span className="cell-no">{String(i + 1).padStart(2, '0')}</span>
                   {rec ? (
                     <>
                       <img src={stampUrl(s)} alt={s.name} style={{ transform: `rotate(${TILT[i % TILT.length]}deg)` }} />
@@ -67,7 +69,7 @@ export default function Journal() {
                   ) : (
                     <>
                       <span className="sil" dangerouslySetInnerHTML={{ __html: SILHOUETTE[s.type] }} />
-                      <span className="hand date dim-t">아직 비어 있어요</span>
+                      <span className="date dim-t">비어 있음</span>
                     </>
                   )}
                   <span className="cell-name">{s.name}</span>
@@ -77,7 +79,7 @@ export default function Journal() {
           </div>
           <div className="journal-foot">
             {allDone ? (
-              <button className="primary xmas" onClick={() => setComplete(true)}>🎄 완성 페이지 보기</button>
+              <button className="primary xmas" onClick={() => setComplete(true)}>완성 페이지 펼치기</button>
             ) : (
               <p className="hand muted">빈 칸을 누르면 그 가게 앞으로 데려다줄게요</p>
             )}
@@ -85,12 +87,15 @@ export default function Journal() {
           </div>
         </div>
         <div className={'cover' + (opened ? ' open' : '')} onClick={() => setOpened(true)}>
+          <span className="cover-band" aria-hidden="true" />
           <div className="cover-in">
-            <span className="cover-label hand">2026 WINTER</span>
-            <h1 className="hand">SEOCHON<br />WINTER<br />JOURNAL</h1>
-            <p className="hand">겨울의 서촌을 기록</p>
-            <div className="cover-flakes">❄ ✦ ❄</div>
-            <span className="cover-count hand">{count} / {STORES.length}</span>
+            <span className="cover-flakes" aria-hidden="true">❄</span>
+            <div className="cover-label">
+              <small>2026 — 2027 WINTER</small>
+              <h1>SEOCHON<br />WINTER<br />JOURNAL</h1>
+              <p className="hand">겨울의 서촌을 기록하는 일기장</p>
+            </div>
+            <span className="cover-count">{String(count).padStart(2, '0')} / {STORES.length}</span>
           </div>
         </div>
       </div>
@@ -135,18 +140,23 @@ function DiaryPage({ id, onBack }) {
   }
 
   return (
-    <div className="diary paper lined">
+    <div className="diary page-paper lined">
       <header className="ss-head">
         <button className="back" onClick={onBack} aria-label="저널로">←</button>
         <div>
-          <p className="hand sub">{fmtDate(rec.date)} · 맑음, 눈</p>
-          <h3 className="hand" style={{ color: store.color }}>{store.name}</h3>
+          <p className="sub">PAGE {String(STORES.indexOf(store) + 1).padStart(2, '0')} · {store.nameEn}</p>
+          <h3>{store.name}</h3>
+          <p className="hand when">{diaryDate(rec.date)}</p>
         </div>
       </header>
+      <div className="weather-row" aria-label="날씨: 눈">
+        <span>날씨</span>
+        <i>☀</i><i>☁</i><i>☂</i><i className="circled">❄</i>
+      </div>
       <div className="diary-body">
         <div className="photo-wrap">
           <div className="polaroid big tilt-r">
-            <span className="tape t1" />
+            <span className="tape tape-amber" />
             <img src={edit ? photo : rec.photo} alt="그날의 사진" />
             <span className="hand cap">{store.name} 앞에서</span>
           </div>
@@ -155,12 +165,12 @@ function DiaryPage({ id, onBack }) {
         {edit ? (
           <div className="edit">
             <label className="note">
-              <span className="hand">한 줄 기록</span>
+              <span>한 줄 기록</span>
               <input className="hand" maxLength={40} value={note} onChange={(e) => setNote(e.target.value)} autoFocus />
               <em>{note.length}/40</em>
             </label>
             <div className="row">
-              <label className="btn ghost-btn">🖼 사진 바꾸기<input type="file" accept="image/*" hidden onChange={onFile} /></label>
+              <label className="btn ghost-btn">사진 바꾸기<input type="file" accept="image/*" hidden onChange={onFile} /></label>
               <button className="btn ghost-btn" onClick={() => { setEdit(false); setNote(rec.note || ''); setPhoto(rec.photo) }}>취소</button>
               <button className="btn" onClick={save}>저장</button>
             </div>
@@ -191,20 +201,20 @@ function CompletePage({ onBack }) {
   const canShare = file && navigator.canShare?.({ files: [file] })
 
   return (
-    <div className="complete paper">
+    <div className="complete page-paper">
       <div className="lights">
         {Array.from({ length: 11 }).map((_, i) => <i key={i} style={{ animationDelay: `${(i % 4) * 0.25}s` }} />)}
       </div>
       <button className="back cb" onClick={onBack} aria-label="저널로">←</button>
-      <p className="hand sub">SEOCHON WINTER JOURNAL</p>
-      <h2 className="hand">겨울 서촌 완주!</h2>
-      <p className="hand muted">{STORES.length}개의 도장을 모두 모았어요</p>
+      <p className="sub">SEOCHON WINTER JOURNAL · THE END</p>
+      <h2>겨울 서촌 완주!</h2>
+      <p className="hand muted">{STORES.length}곳의 겨울을 한 권에 모았다</p>
       <div className="mini-grid">
         {STORES.map((s, i) => (
           <img key={s.id} src={stampUrl(s)} alt={s.name} style={{ transform: `rotate(${TILT[i % TILT.length]}deg)`, animationDelay: `${0.1 + i * 0.05}s` }} />
         ))}
       </div>
-      <button className="primary xmas" onClick={make} disabled={busy}>{busy ? '저널을 엮는 중…' : '저널을 이미지 한 장으로 저장'}</button>
+      <button className="primary" onClick={make} disabled={busy}>{busy ? '저널을 엮는 중…' : '저널을 이미지 한 장으로 저장'}</button>
       <p className="small-muted">#서촌겨울스탬프투어 로 공유해주세요</p>
 
       {img && (

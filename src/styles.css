@@ -1,173 +1,271 @@
+/* ─────────────────────────────────────────────────────────────
+   SEOCHON WINTER JOURNAL — "도트로 그린 겨울 서촌 일기장"
+   한지(종이) · 먹(남색 잉크) · 인주(도장 주홍) · 등불(호박색) · 솔(초록) · 겨울하늘(하늘색)
+   글꼴: 도트(Galmuri11) = 화면이 말하는 글 / 손글씨(Gaegu) = 내가 쓴 글(날짜·기록·메모)
+   도트 테두리는 src/pixel-frames.css (scripts/build-pixel-frames.mjs 로 생성)
+   ───────────────────────────────────────────────────────────── */
 :root {
-  --ink: #34405e;
-  --ink2: #5d5348;
-  --paper: #f7f2e8;
-  --red: #c25b56;
-  --hand: 'Galmuri11', 'Apple SD Gothic Neo', monospace;
-  --body: 'Galmuri11', 'Apple SD Gothic Neo', 'Noto Sans KR', monospace;
-  --noise: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 .45  0 0 0 0 .38  0 0 0 0 .28  0 0 0 .09 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+  --paper: #F7F2E8;
+  --paper-2: #ECE4D5;
+  --card: #FFFCF5;
+  --ink: #272A40;
+  --ink-2: #4A4E68;
+  --ink-3: #8D8B98;
+  --red: #D14B35;
+  --red-d: #A5372A;
+  --pine: #3B6655;
+  --amber: #F4B860;
+  --sky: #AFC3DA;
+  --navy: #43507A;
+  --rule: rgba(95, 125, 170, .26);
+  --margin: rgba(209, 75, 53, .42);
+
+  --pixel: 'Galmuri11', 'Apple SD Gothic Neo', monospace;
+  --hand: 'Gaegu', 'Galmuri11', 'Apple SD Gothic Neo', cursive;
+  --body: var(--pixel);
+
+  --noise: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 .45  0 0 0 0 .38  0 0 0 0 .28  0 0 0 .08 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+  /* 일기장 도트 그리드 — 지도 바닥과 같은 2x2 점, 16px 간격 */
+  --grid: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' shape-rendering='crispEdges'><rect x='7' y='7' width='2' height='2' fill='%23CBD2DC'/></svg>");
+  --shadow: 3px 3px 0 rgba(39, 42, 64, .28);
   --safe-t: env(safe-area-inset-top, 0px);
   --safe-b: env(safe-area-inset-bottom, 0px);
 }
 
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-html, body, #root { margin: 0; height: 100%; overflow: hidden; background: #BFD7DE; }
-body { font-family: var(--body); color: var(--ink2); overscroll-behavior: none; }
+html, body, #root { margin: 0; height: 100%; overflow: hidden; background: var(--paper); }
+body { font-family: var(--body); color: var(--ink-2); overscroll-behavior: none; }
 button { font: inherit; color: inherit; border: 0; background: none; cursor: pointer; padding: 0; }
-.hand { font-family: var(--hand); }
+.hand { font-family: var(--hand); letter-spacing: -.04em; -webkit-font-smoothing: antialiased; }
 
-.app { position: fixed; inset: 0; overflow: hidden; }
+.app { position: fixed; inset: 0; overflow: hidden; word-break: keep-all; }
 .scene { position: absolute; inset: 0; touch-action: none; }
+.pixel-canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; touch-action: none; image-rendering: pixelated; }
+/* 도트 글꼴은 흐림 없이 */
+.app { -webkit-font-smoothing: none; -moz-osx-font-smoothing: unset; font-smooth: never; }
+.app .hand { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
 
-.paper {
+/* ── 종이 ── */
+.paper { background: var(--paper) var(--noise); }
+.page-paper { background-color: var(--paper); background-image: var(--noise), var(--grid); }
+.lined {
   background-color: var(--paper);
-  background-image: var(--noise);
+  background-image: var(--noise),
+    linear-gradient(90deg, transparent 33px, var(--margin) 33px 35px, transparent 35px),
+    repeating-linear-gradient(transparent 0 33px, var(--rule) 33px 34px);
 }
 
-/* ── 로딩 / 인트로 ── */
+/* ── 도트 상자 (공통 테두리) ── */
+:is(.brand, .progress, .journal-btn, .map-fab, .x, .back, .btn, .sheet, .pm-card, .share-box, .toast, .primary, .stamp-pad, .cell, .hint) {
+  border: 6px solid transparent; border-image: var(--px-paper) 3 fill / 6px stretch;
+  filter: drop-shadow(var(--shadow));
+}
+:is(.sheet, .stamp-pad, .cell, .share-box) { border-image-source: var(--px-card); }
+.hint { border-image-source: var(--px-memo); }
+.toast, .btn { border-image-source: var(--px-ink); }
+.btn.ghost-btn { border-image-source: var(--px-paper); }
+.primary { border-image-source: var(--px-red); }
+.primary.xmas { border-image-source: var(--px-pine); }
+.primary:disabled { border-image-source: var(--px-gray); }
+/* 누르면 그림자 쪽으로 쑥 */
+:is(.progress, .journal-btn, .map-fab, .x, .back, .btn, .primary):active:not(:disabled) {
+  transform: translate(2px, 2px); filter: drop-shadow(1px 1px 0 rgba(39, 42, 64, .28));
+}
+
+/* ── 마스킹테이프 (도트 지그재그 끝 + 결무늬) ── */
+.tape {
+  --tape: #E9C27A;
+  position: absolute; z-index: 3; width: 76px; height: 20px; top: -11px; left: 50%; margin-left: -38px;
+  background:
+    repeating-linear-gradient(90deg, rgba(255, 255, 255, .22) 0 4px, transparent 4px 8px),
+    var(--tape);
+  opacity: .86; transform: rotate(-3deg);
+  clip-path: polygon(0 0, 100% 0, calc(100% - 4px) 25%, 100% 50%, calc(100% - 4px) 75%, 100% 100%, 0 100%, 4px 75%, 0 50%, 4px 25%);
+}
+.tape-red { --tape: #E07A63; }
+.tape-blue { --tape: #9FB8D6; transform: rotate(2.5deg); }
+.tape-amber { --tape: #F0C27A; transform: rotate(-2deg); }
+.tape-pine { --tape: #8FB3A0; transform: rotate(3deg); }
+
+/* ── 로딩 = 저널 표지 ── */
 .loading {
-  position: absolute; inset: 0; z-index: 50; display: grid; place-content: center; text-align: center;
+  position: absolute; inset: 0; z-index: 50; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 22px;
   background: var(--paper) var(--noise); transition: opacity .6s ease .2s, visibility .8s;
 }
 .loading.gone { opacity: 0; visibility: hidden; }
-.loading .flake { font-size: 42px; color: #8fb2cf; animation: spin 3s linear infinite; }
-.loading p { font-size: 24px; color: var(--ink); }
-@keyframes spin { to { transform: rotate(360deg); } }
-
-.intro-title {
-  position: absolute; left: 0; right: 0; top: calc(16% + var(--safe-t)); text-align: center; pointer-events: none;
-  animation: introFade 2.9s ease forwards; color: var(--ink); text-shadow: 0 2px 0 #fff, 0 0 18px #fff;
+.loading-book {
+  position: relative; width: 196px; height: 260px; display: grid; place-items: center;
+  background: var(--navy); box-shadow: inset 6px 0 0 #2F3858, inset 0 0 0 2px var(--ink), 6px 6px 0 rgba(39, 42, 64, .25);
+  animation: bookBob 1.6s steps(2) infinite;
 }
-.intro-title h1 { margin: 0; font-size: 36px; }
-.intro-title .small { margin: 0 0 4px; font-size: 18px; letter-spacing: 2px; color: var(--red); }
-@keyframes introFade { 0% { opacity: 0; transform: translateY(8px); } 18%, 70% { opacity: 1; transform: none; } 100% { opacity: 0; transform: translateY(-10px); } }
+.loading-book .cover-label { transform: scale(.82) rotate(-2deg); }
+.loading p { margin: 0; font-size: 26px; color: var(--ink); }
+.loading .flake { display: inline-block; margin-left: 6px; color: var(--red); font-family: var(--pixel); font-size: 18px; animation: spin 3s steps(8) infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+@keyframes bookBob { 50% { transform: translateY(-3px); } }
 
-/* ── HUD ── */
+/* ── 인트로 제목 (테이프로 붙인 쪽지) ── */
+.intro-title {
+  position: absolute; left: 50%; top: calc(15% + var(--safe-t)); transform: translateX(-50%) rotate(-1.5deg);
+  padding: 18px 22px 12px; text-align: center; pointer-events: none; white-space: nowrap;
+  background: var(--card) var(--noise); box-shadow: 0 0 0 2px var(--ink), 5px 5px 0 rgba(39, 42, 64, .25);
+  animation: introFade 2.9s ease forwards;
+}
+.intro-title h1 { margin: 2px 0 0; font-size: 34px; font-weight: 700; color: var(--ink); line-height: 1.1; }
+.intro-title .small { margin: 0; font-size: 12px; letter-spacing: 2px; color: var(--red); font-weight: 700; }
+@keyframes introFade {
+  0% { opacity: 0; transform: translate(-50%, 10px) rotate(-1.5deg); }
+  18%, 72% { opacity: 1; transform: translate(-50%, 0) rotate(-1.5deg); }
+  100% { opacity: 0; transform: translate(-50%, -10px) rotate(-1.5deg); }
+}
+
+/* ── HUD: 일기장 머리말 ── */
 .hud {
-  position: absolute; left: 0; right: 0; top: 0; z-index: 5; display: flex; align-items: center; gap: 8px;
-  padding: calc(10px + var(--safe-t)) 12px 10px; pointer-events: none;
+  position: absolute; left: 0; right: 0; top: 0; z-index: 5; display: flex; align-items: stretch; gap: 6px;
+  padding: calc(12px + var(--safe-t)) 10px 10px; pointer-events: none;
   opacity: 0; transform: translateY(-14px); transition: .5s ease;
 }
 .hud.on { opacity: 1; transform: none; }
 .hud > * { pointer-events: auto; }
-.brand { display: flex; flex-direction: column; line-height: .95; color: var(--ink); margin-right: auto;
-  background: rgba(255,255,255,.75); padding: 6px 10px; border-radius: 12px; backdrop-filter: blur(6px); }
-.brand span { font-size: 12px; color: var(--red); letter-spacing: 1px; }
-.brand b { font-size: 18px; }
-.progress {
-  display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 6px 12px; border-radius: 999px;
-  background: rgba(255,255,255,.88); box-shadow: 0 3px 10px rgba(52,64,94,.15); color: var(--ink);
+.brand { position: relative; display: flex; flex-direction: column; justify-content: center; gap: 1px; margin-right: auto; min-width: 0; padding: 2px 6px 0; }
+.brand-tape { width: 34px; height: 14px; left: -8px; top: -9px; margin: 0; transform: rotate(-24deg); }
+.brand-en { font-size: 12px; font-weight: 700; letter-spacing: 0; color: var(--red); white-space: nowrap; }
+.brand b { font-size: 21px; font-weight: 700; color: var(--ink); line-height: 1.05; white-space: nowrap; }
+.weather { font-family: var(--pixel); font-size: 12px; color: var(--navy); display: inline-block; padding: 0 3px; box-shadow: 0 0 0 1.5px var(--navy); border-radius: 50%; vertical-align: 2px; }
+.progress { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; padding: 0 4px; color: var(--ink); }
+.progress-n { font-size: 12px; line-height: 1; color: var(--ink-3); }
+.progress-n b { font-size: 18px; color: var(--ink); }
+.dots { display: grid; grid-template-columns: repeat(9, 6px); gap: 2px; }
+.dots i { width: 6px; height: 6px; box-shadow: inset 0 0 0 1px #C9C1B2; }
+.dots i.on { box-shadow: none; }
+.journal-btn { position: relative; width: 50px; display: grid; place-items: center; }
+.journal-btn svg { image-rendering: pixelated; }
+.journal-btn em {
+  position: absolute; top: -10px; right: -10px; min-width: 22px; height: 22px; padding: 0 3px; display: grid; place-items: center;
+  background: var(--red); color: #fff; font: 700 12px/1 var(--pixel); font-style: normal;
+  border-radius: 50%; box-shadow: 0 0 0 2px var(--card), 0 0 0 4px var(--red); transform: rotate(-8deg);
 }
-.progress .hand { font-size: 18px; font-weight: 700; line-height: 1; }
-.dots { display: grid; grid-template-columns: repeat(9, 5px); gap: 2px; }
-.dots i { width: 5px; height: 5px; border-radius: 50%; background: #d8d3ca; }
-.journal-btn {
-  position: relative; width: 48px; height: 48px; display: grid; place-items: center; border-radius: 14px;
-  background: #fffaf0; box-shadow: 0 3px 10px rgba(52,64,94,.18);
-}
-.journal-btn em { position: absolute; top: -4px; right: -4px; min-width: 20px; height: 20px; border-radius: 10px; background: var(--red);
-  color: #fff; font: 700 12px/20px var(--body); font-style: normal; }
 
+/* 지도 위 메모 쪽지 (안내) */
 .hint {
-  position: absolute; left: 50%; bottom: calc(22px + var(--safe-b)); transform: translateX(-50%); z-index: 4;
-  padding: 9px 18px; border-radius: 999px; background: rgba(255,255,255,.92); color: var(--ink); font-size: 18px;
-  white-space: nowrap; box-shadow: 0 4px 14px rgba(52,64,94,.15); animation: bob 2.4s ease-in-out infinite; pointer-events: none;
+  position: absolute; left: 50%; bottom: calc(26px + var(--safe-b)); z-index: 4; max-width: calc(100% - 32px);
+  transform: translateX(-50%) rotate(-1deg); padding: 4px 16px 2px; pointer-events: none;
+  animation: memoBob 2.4s steps(2) infinite;
 }
-@keyframes bob { 50% { transform: translate(-50%, -4px); } }
+.hint .tape { width: 40px; height: 14px; top: -10px; left: 12px; margin: 0; }
+.hint .hand { display: block; font-size: 22px; line-height: 1.25; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+@keyframes memoBob { 50% { transform: translate(-50%, -3px) rotate(-1deg); } }
+
+.map-fab {
+  position: absolute; right: 12px; bottom: calc(92px + var(--safe-b)); z-index: 5; width: 62px; height: 66px;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; color: var(--ink);
+  animation: popIn .35s cubic-bezier(.2,1.4,.4,1);
+}
+.map-fab span { font-size: 12px; font-weight: 700; line-height: 1; }
 
 .toast {
-  position: absolute; left: 50%; top: calc(80px + var(--safe-t)); transform: translateX(-50%); z-index: 60;
-  background: var(--ink); color: #fff; padding: 8px 16px; border-radius: 999px; font-size: 12px; animation: toast 2.4s ease forwards;
+  position: absolute; left: 50%; top: calc(86px + var(--safe-t)); transform: translateX(-50%); z-index: 60;
+  color: #fff; padding: 2px 10px; font-size: 12px; white-space: nowrap; animation: toast 2.4s ease forwards;
 }
 @keyframes toast { 0% { opacity: 0; transform: translate(-50%, -8px); } 10%, 85% { opacity: 1; transform: translate(-50%, 0); } 100% { opacity: 0; } }
 
-/* ── 꾸미기 요소 ── */
-.tape {
-  position: absolute; width: 70px; height: 22px; top: -10px; left: 50%; margin-left: -35px; z-index: 2;
-  background: rgba(240, 200, 120, .78); transform: rotate(-4deg);
-  clip-path: polygon(3% 0, 97% 4%, 100% 50%, 96% 100%, 2% 96%, 0 50%);
-  box-shadow: 0 1px 2px rgba(0,0,0,.05);
+.osm-credit { position: absolute; left: 8px; bottom: calc(4px + var(--safe-b)); z-index: 4; font-size: 12px; color: rgba(39, 42, 64, .5); pointer-events: none; }
+
+/* ── 버튼 ── */
+.btn, .primary {
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px; font-weight: 700;
+  text-decoration: none; user-select: none; transition: transform .08s;
 }
-.tape.t2 { background: rgba(170, 205, 230, .8); transform: rotate(3deg); }
-.tape.t3 { background: rgba(240, 170, 170, .75); transform: rotate(-2deg); }
-.polaroid { position: relative; background: #fffefb; padding: 8px 8px 26px; box-shadow: 0 6px 16px rgba(60,40,20,.18); }
-.polaroid img, .polaroid .ph { display: block; width: 100%; aspect-ratio: 1; object-fit: cover; background: #ece7dd; }
-.polaroid .ph { display: grid; place-items: center; color: #a99c8a; font-size: 18px; }
+.btn { padding: 4px 8px; color: #fff; font-size: 12px; }
+.ghost-btn { color: var(--ink); }
+.primary { width: 100%; padding: 8px; color: #fff; font-size: 18px; letter-spacing: .5px; filter: drop-shadow(0 4px 0 var(--ink)); }
+.primary:disabled { color: #8D8679; cursor: default; filter: none; }
+.small-muted { margin: 6px 0 0; font-size: 12px; line-height: 1.5; color: var(--ink-3); }
+.muted { color: var(--ink-3); }
+.x { position: absolute; top: 10px; right: 10px; width: 36px; height: 36px; display: grid; place-items: center; font-size: 12px; color: var(--ink); z-index: 4; }
+.back { width: 42px; height: 42px; display: grid; place-items: center; font-size: 18px; color: var(--ink); flex: none; }
+
+/* ── 폴라로이드 ── */
+.polaroid { position: relative; background: #FFFEFA; padding: 8px 8px 30px; box-shadow: 0 0 0 2px #E4DACA, 4px 4px 0 rgba(39, 42, 64, .18); }
+.polaroid img, .polaroid .ph { display: block; width: 100%; aspect-ratio: 1; object-fit: cover; background: #ECE6DA; }
+.polaroid .ph {
+  display: grid; place-items: center; color: #A99F8F; font-size: 22px;
+  background: #ECE6DA repeating-linear-gradient(45deg, transparent 0 8px, rgba(255, 255, 255, .45) 8px 10px);
+}
+.polaroid .cap { position: absolute; bottom: 4px; left: 0; right: 0; text-align: center; font-size: 20px; color: var(--ink-2); }
 .tilt-l { transform: rotate(-3deg); }
 .tilt-r { transform: rotate(2.5deg); }
 
-.btn, .primary {
-  display: inline-flex; align-items: center; justify-content: center; gap: 6px; border-radius: 14px; font-weight: 700;
-  text-decoration: none; user-select: none; transition: transform .1s;
-}
-.btn { padding: 10px 14px; background: var(--ink); color: #fff; font-size: 12px; }
-.btn:active, .primary:active { transform: scale(.97); }
-.ghost-btn { background: #fff; color: var(--ink); box-shadow: inset 0 0 0 1.5px #d6cdbd; }
-.primary {
-  width: 100%; padding: 15px; background: var(--red); color: #fff; font-size: 18px; box-shadow: 0 4px 0 #9b4541;
-}
-.primary:disabled { background: #cfc6b8; box-shadow: 0 4px 0 #b3a998; cursor: default; }
-.primary.xmas { background: #3f7a5a; box-shadow: 0 4px 0 #2b5a40; }
-.small-muted { margin: 6px 0 0; font-size: 12px; color: #9a8d7c; }
-.muted { color: #9a8d7c; }
-.x { position: absolute; top: 10px; right: 10px; width: 34px; height: 34px; border-radius: 50%; background: rgba(255,255,255,.85);
-  font-size: 12px; color: var(--ink); z-index: 3; }
-.back { width: 40px; height: 40px; border-radius: 50%; background: #fff; font-size: 18px; color: var(--ink); box-shadow: 0 2px 8px rgba(0,0,0,.08); flex: none; }
-
-/* ── 매장 정보 시트 ── */
+/* ── 매장 정보: 인덱스 카드 ── */
 .dim {
   position: absolute; inset: 0; z-index: 20; display: grid; place-items: center; padding: 20px;
-  background: rgba(30, 38, 58, .38); animation: dimIn .3s ease;
+  background: rgba(39, 42, 64, .42); animation: dimIn .3s ease;
 }
 .dim.out { animation: dimOut .22s ease forwards; }
-@keyframes dimIn { from { background: rgba(30,38,58,0); } }
-@keyframes dimOut { to { background: rgba(30,38,58,0); } }
+@keyframes dimIn { from { background: rgba(39, 42, 64, 0); } }
+@keyframes dimOut { to { background: rgba(39, 42, 64, 0); } }
 .sheet {
-  position: relative; width: min(380px, 100%); border-radius: 22px; padding: 0 20px 18px; overflow: visible;
-  box-shadow: 0 20px 50px rgba(20,25,40,.35); animation: popIn .3s cubic-bezier(.2,1.3,.4,1);
+  position: relative; width: min(372px, 100%); padding: 18px 16px 12px; filter: drop-shadow(5px 5px 0 rgba(20, 22, 40, .35));
+  animation: popIn .3s cubic-bezier(.2,1.3,.4,1);
 }
+.sheet::before { /* 카드 안쪽 도트 그리드 */
+  content: ''; position: absolute; inset: 0; background: var(--grid); opacity: .7; pointer-events: none;
+}
+.sheet > * { position: relative; }
+.sheet > .x { position: absolute; }
 .sheet.out { animation: popOut .22s ease forwards; }
 @keyframes popIn { from { transform: scale(.5); opacity: 0; } }
 @keyframes popOut { to { transform: scale(.7); opacity: 0; } }
-.sheet-band { margin: 0 -20px; height: 62px; border-radius: 22px 22px 0 0; display: flex; align-items: flex-end; justify-content: space-between; padding: 0 16px 9px; color: #fff; }
-.chip { background: rgba(255,255,255,.25); padding: 3px 10px; border-radius: 999px; font-size: 12px; font-weight: 700; }
-.band-en { font-size: 12px; letter-spacing: 2px; opacity: .8; }
-.sheet h2 { margin: 14px 0 4px; font-size: 30px; color: var(--ink); line-height: 1.1; }
-.sheet .intro { margin: 0 0 12px; font-size: 12px; line-height: 1.55; }
-.meta { margin: 0 0 18px; display: grid; gap: 5px; font-size: 12px; }
-.meta div { display: flex; gap: 10px; }
-.meta dt { flex: none; width: 30px; color: #a39581; font-weight: 700; }
-.meta dd { margin: 0; }
-.meta a { color: var(--ink); text-decoration: underline; text-underline-offset: 2px; }
-.slot-wrap { position: relative; margin: 0 auto; width: 190px; }
-.slot { width: 190px; height: 190px; border-radius: 18px; background: #fffdf8; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;
-  box-shadow: 0 4px 14px rgba(60,40,20,.12); }
-.slot.empty { border: 2.5px dashed #d6cdbd; }
-.slot.empty .sil { width: 74px; height: 74px; opacity: .28; }
-.slot .cta { font-size: 18px; color: var(--ink); animation: pulse 1.6s ease-in-out infinite; }
-@keyframes pulse { 50% { opacity: .45; } }
-.slot.stamped img { width: 140px; height: 140px; transform: rotate(-6deg); }
-.slot .date { font-size: 18px; color: var(--ink2); }
-.slot.fresh { animation: glow 1.4s ease 2; }
-@keyframes glow { 50% { box-shadow: 0 0 0 6px rgba(255, 220, 120, .55), 0 4px 14px rgba(60,40,20,.12); } }
-.foot { text-align: center; margin: 14px 0 0; font-size: 18px; color: #9a8d7c; }
+.sheet .tape.sheet-tape { position: absolute; width: 96px; height: 22px; top: -18px; margin-left: -48px; transform: rotate(-2deg); }
+.sheet-top { display: flex; align-items: center; gap: 8px; }
+.no { font-size: 12px; font-weight: 700; color: var(--ink-3); letter-spacing: 1px; }
+.chip { font-size: 12px; font-weight: 700; padding: 0 5px; box-shadow: inset 0 0 0 2px currentColor; }
+.sheet h2 { margin: 8px 0 0; font-size: 24px; font-weight: 700; color: var(--ink); line-height: 1.15; padding-right: 30px; }
+.name-en { margin: 2px 0 10px; font-size: 12px; letter-spacing: 1.5px; color: var(--ink-3); }
+.sheet .intro { margin: 0 0 10px; padding: 8px 0; font-size: 12px; line-height: 1.6; color: var(--ink-2); border-top: 2px dashed #D9CFBE; border-bottom: 2px dashed #D9CFBE; }
+.meta { margin: 0 0 14px; display: grid; gap: 4px; font-size: 12px; }
+.meta div { display: flex; gap: 8px; }
+.meta dt { flex: none; padding: 0 4px; height: 16px; line-height: 16px; background: var(--ink); color: var(--paper); font-weight: 700; }
+.meta dd { margin: 0; line-height: 16px; }
+.meta a { color: var(--red); text-decoration: underline; text-underline-offset: 3px; }
 
-/* ── 스탬프 인증 화면 ── */
+/* 여권식 도장 칸 */
+.slot-wrap { position: relative; margin: 0 auto; width: 188px; }
+.slot {
+  position: relative; width: 188px; height: 176px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;
+  background: rgba(255, 255, 255, .6); outline: 2px dashed #B9AE9C; outline-offset: -2px;
+}
+.slot-label {
+  position: absolute; top: 6px; left: 8px; font-size: 12px; font-weight: 700; letter-spacing: 1.5px; color: #B9AE9C;
+}
+.slot.empty .sil { width: 70px; height: 70px; opacity: .3; }
+.slot .cta { font-size: 12px; font-weight: 700; color: #fff; background: var(--red); padding: 2px 8px; box-shadow: 2px 2px 0 var(--ink); animation: pulse 1.6s steps(2) infinite; }
+@keyframes pulse { 50% { transform: translateY(-2px); } }
+.slot.stamped { outline-color: transparent; background: none; }
+.slot.stamped .slot-label { color: var(--red); }
+.slot.stamped img { width: 130px; height: 130px; transform: rotate(-6deg); mix-blend-mode: multiply; }
+.slot .date { font-size: 22px; color: var(--ink); margin-top: -8px; }
+.slot.fresh { animation: glow 1.4s steps(4) 2; }
+@keyframes glow { 50% { box-shadow: 0 0 0 6px rgba(244, 184, 96, .7); } }
+.foot { text-align: center; margin: 10px 0 0; font-size: 20px; line-height: 1.2; color: var(--ink-3); }
+
+/* ── 스탬프 인증 · 일기 페이지 ── */
 .stamp-screen, .diary {
-  position: absolute; inset: 0; z-index: 30; overflow-y: auto; padding: calc(14px + var(--safe-t)) 20px calc(26px + var(--safe-b));
+  position: absolute; inset: 0; z-index: 30; overflow-y: auto; padding: calc(14px + var(--safe-t)) 20px calc(28px + var(--safe-b));
   animation: slideUp .3s cubic-bezier(.2,.9,.3,1);
 }
 .stamp-screen > *, .diary > * { max-width: 420px; margin-left: auto; margin-right: auto; }
 @keyframes slideUp { from { transform: translateY(40px); opacity: 0; } }
-.ss-head { display: flex; align-items: center; gap: 12px; margin-bottom: 18px; }
-.ss-head .sub { margin: 0; font-size: 18px; color: #9a8d7c; }
-.ss-head h3 { margin: 0; font-size: 30px; line-height: 1.05; }
+.ss-head { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 16px; }
+.ss-head .sub { margin: 4px 0 0; font-size: 12px; font-weight: 700; letter-spacing: 1px; color: var(--red); }
+.ss-head h3 { margin: 4px 0 0; font-size: 24px; font-weight: 700; line-height: 1.1; color: var(--ink); }
+.ss-head .when { margin: 2px 0 0; font-size: 22px; color: var(--ink-2); }
 
-.stamp-pad { position: relative; height: 210px; border-radius: 18px; background: #fffdf8; box-shadow: 0 4px 14px rgba(60,40,20,.1);
-  display: grid; place-items: center; overflow: visible; margin-bottom: 22px; }
-.pad-ring { position: absolute; width: 170px; height: 170px; border-radius: 50%; border: 2.5px dashed; }
-.stamp-pad .ghost { width: 150px; opacity: .13; filter: grayscale(.3); }
-.stamp-pad .mark { position: absolute; width: 160px; animation: markIn .5s ease forwards; opacity: 0; }
+.stamp-pad { position: relative; height: 212px; display: grid; place-items: center; overflow: visible; margin-bottom: 26px; }
+.stamp-pad .slot-label { top: 2px; left: 4px; }
+.pad-ring { position: absolute; width: 168px; height: 168px; border-radius: 50%; border: 2px dashed; }
+.stamp-pad .ghost { width: 150px; opacity: .12; filter: grayscale(.3); }
+.stamp-pad .mark { position: absolute; width: 160px; animation: markIn .5s ease forwards; opacity: 0; mix-blend-mode: multiply; }
 .stamp-pad .ink { position: absolute; width: 230px; height: 230px; border-radius: 50%; opacity: 0; animation: ink .7s ease .22s forwards; }
 @keyframes markIn {
   0%, 44% { opacity: 0; transform: rotate(-6deg) scale(1.08); filter: blur(2px); }
@@ -175,11 +273,12 @@ button { font: inherit; color: inherit; border: 0; background: none; cursor: poi
   100% { opacity: 1; transform: rotate(-6deg) scale(1); filter: blur(0); }
 }
 @keyframes ink { 0% { opacity: 0; transform: scale(.5); } 40% { opacity: 1; } 100% { opacity: 0; transform: scale(1.35); } }
+/* 도장 손잡이 (도트 나무 손잡이) */
 .handle { position: absolute; top: 50%; left: 50%; width: 120px; margin: -175px 0 0 -60px; display: flex; flex-direction: column; align-items: center;
-  animation: press .5s cubic-bezier(.5,0,.4,1) forwards; z-index: 3; filter: drop-shadow(0 10px 10px rgba(0,0,0,.2)); }
-.handle .knob { width: 62px; height: 52px; border-radius: 50% 50% 40% 40%; background: linear-gradient(90deg, #a87650, #c99a6e 45%, #8f5f3d); }
-.handle .neck { width: 34px; height: 46px; background: linear-gradient(90deg, #a87650, #c99a6e 45%, #8f5f3d); margin-top: -6px; }
-.handle .base { width: 120px; height: 34px; border-radius: 10px; box-shadow: inset 0 -8px 0 rgba(0,0,0,.2); }
+  animation: press .5s cubic-bezier(.5,0,.4,1) forwards; z-index: 3; filter: drop-shadow(4px 8px 0 rgba(39, 42, 64, .2)); }
+.handle .knob { width: 60px; height: 50px; background: #B48B6A; box-shadow: inset 8px 0 0 #D2AE8C, inset -8px 0 0 #8E6448, 0 0 0 3px var(--ink); clip-path: polygon(16% 0, 84% 0, 100% 20%, 100% 100%, 0 100%, 0 20%); }
+.handle .neck { width: 32px; height: 44px; background: #B48B6A; box-shadow: inset 6px 0 0 #D2AE8C, inset -6px 0 0 #8E6448; margin-top: -2px; outline: 3px solid var(--ink); }
+.handle .base { width: 120px; height: 32px; box-shadow: inset 0 -8px 0 rgba(0,0,0,.22), 0 0 0 3px var(--ink); }
 @keyframes press {
   0% { transform: translateY(-160px) scale(1.25); opacity: 0; }
   20% { opacity: 1; }
@@ -190,181 +289,158 @@ button { font: inherit; color: inherit; border: 0; background: none; cursor: poi
 .shake { animation: shake .3s ease .2s; }
 @keyframes shake { 20% { transform: translate(-3px, 2px); } 40% { transform: translate(3px, -2px); } 60% { transform: translate(-2px, 1px); } 80% { transform: translate(1px, 0); } }
 
-.photo-row { display: flex; gap: 16px; align-items: center; margin-bottom: 20px; }
+.photo-row { display: flex; gap: 16px; align-items: center; margin-bottom: 22px; }
 .photo-row .polaroid { width: 46%; flex: none; }
 .photo-btns { display: flex; flex-direction: column; gap: 8px; flex: 1; }
-.note { position: relative; display: block; margin-bottom: 18px; }
-.note span { display: block; font-size: 18px; color: var(--ink); margin-bottom: 4px; }
-.note input { width: 100%; font-size: 24px; padding: 6px 2px 8px; border: 0; border-bottom: 2px dashed #cdbfa8; background: transparent; color: var(--ink2); outline: none; }
-.note em { position: absolute; right: 0; top: 4px; font-size: 12px; color: #a99c8a; font-style: normal; }
+.photo-btns .btn { padding: 6px 8px; }
+.note { position: relative; display: block; margin-bottom: 20px; }
+.note > span { display: inline-block; font-size: 12px; font-weight: 700; color: #fff; background: var(--ink); padding: 1px 6px; margin-bottom: 4px; }
+.note input {
+  width: 100%; font-size: 26px; padding: 4px 2px 6px; border: 0; color: var(--ink); outline: none;
+  background: transparent; border-bottom: 2px solid var(--rule);
+}
+.note input::placeholder { color: #B9B2A5; }
+.note em { position: absolute; right: 0; top: 2px; font-size: 12px; color: var(--ink-3); font-style: normal; }
 .done-box { text-align: center; padding-top: 4px; }
-.done-box .big { font-size: 30px; color: var(--red); margin: 0; }
+.done-box .big { font-size: 34px; font-weight: 700; color: var(--red); margin: 0; }
 .done-box .primary { margin-top: 18px; }
 
 /* ── 윈터 저널 ── */
-.journal { position: absolute; inset: 0; z-index: 25; background: rgba(40, 46, 66, .55); animation: dimIn .3s ease; }
+.journal { position: absolute; inset: 0; z-index: 25; background: rgba(39, 42, 64, .58); animation: dimIn .3s ease; }
 .jx { top: calc(12px + var(--safe-t)); right: 12px; z-index: 40; }
-.book { position: absolute; inset: calc(56px + var(--safe-t)) 14px calc(14px + var(--safe-b)); max-width: 440px; margin: 0 auto; perspective: 1600px; }
-.pages { position: absolute; inset: 0; border-radius: 6px 16px 16px 6px; overflow-y: auto; padding: 18px 16px 22px 22px;
-  box-shadow: 0 18px 40px rgba(0,0,0,.3), inset 10px 0 14px -8px rgba(120,90,60,.35); }
-.page-head { text-align: center; margin-bottom: 16px; }
-.page-head .sub { margin: 0; font-size: 18px; color: #9a8d7c; }
-.page-head h2 { margin: 0; font-size: 36px; color: var(--ink); line-height: 1; }
-.page-head .count { margin: 4px 0 0; color: var(--red); font-size: 18px; }
-.grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px 14px; }
-.cell { position: relative; background: #fffdf8; border-radius: 12px; padding: 14px 8px 10px; display: flex; flex-direction: column; align-items: center;
-  box-shadow: 0 3px 10px rgba(60,40,20,.1); }
-.cell img { width: 96px; height: 96px; }
-.cell .sil { width: 58px; height: 58px; margin: 19px 0; color: #b8ad9c; opacity: .45; }
-.cell .date { font-size: 18px; margin-top: 2px; }
-.cell .dim-t { color: #b8ad9c; }
-.cell-name { font-size: 12px; color: #8a7d6c; margin-top: 2px; }
-.cell.fresh { animation: sparkle 1s ease .5s 3; }
-.cell.fresh::after { content: '✦'; position: absolute; top: 6px; right: 10px; color: #f0b429; font-size: 18px; animation: twinkle .7s ease-in-out infinite alternate; }
-@keyframes sparkle { 50% { box-shadow: 0 0 0 5px rgba(255, 214, 102, .75), 0 0 24px rgba(255, 214, 102, .8); } }
+.book { position: absolute; inset: calc(60px + var(--safe-t)) 14px calc(16px + var(--safe-b)); max-width: 440px; margin: 0 auto; perspective: 1600px; }
+.pages {
+  position: absolute; inset: 0; overflow-y: auto; padding: 20px 14px 24px 34px;
+  box-shadow: 0 0 0 2px var(--ink), 6px 6px 0 rgba(20, 22, 40, .35), inset 14px 0 12px -10px rgba(110, 85, 60, .3);
+}
+/* 스프링 고리 */
+.rings { position: absolute; z-index: 2; left: -6px; top: 10px; bottom: 10px; width: 24px; display: flex; flex-direction: column; justify-content: space-between; pointer-events: none; }
+.rings i { display: block; width: 24px; height: 8px; background: #8D93A8; box-shadow: inset 0 2px 0 #C3C8D6, inset 0 -2px 0 #5F677E, 0 0 0 2px var(--ink); }
+.rings i::after { content: ''; display: block; width: 6px; height: 6px; margin: 1px 0 0 16px; background: var(--ink); }
+.page-head { text-align: center; margin-bottom: 18px; }
+.page-head .sub { margin: 0; font-size: 12px; font-weight: 700; letter-spacing: 1px; color: var(--red); }
+.page-head h2 { margin: 2px 0 0; font-size: 36px; font-weight: 700; color: var(--ink); line-height: 1.1; }
+.page-head .count { display: inline-block; margin: 6px 0 0; padding: 0 6px; font-size: 12px; color: var(--ink-2); box-shadow: inset 0 0 0 2px var(--ink-2); }
+.page-head .count b { color: var(--red); }
+.grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px 12px; }
+.cell { position: relative; padding: 8px 4px 2px; display: flex; flex-direction: column; align-items: center; }
+.cell:not(.on) { border-image-source: none; border-style: dashed; border-width: 2px; border-color: #C3B9A8; margin: 4px; padding: 10px 6px 6px; background: rgba(255, 255, 255, .35); filter: none; }
+.cell-no { position: absolute; top: 0; left: 2px; font-size: 12px; font-weight: 700; color: var(--ink-3); }
+.cell:not(.on) .cell-no { top: 2px; left: 4px; color: #B9AE9C; }
+.cell img { width: 96px; height: 96px; mix-blend-mode: multiply; }
+.cell .sil { width: 54px; height: 54px; margin: 18px 0 16px; color: #B9AE9C; opacity: .5; }
+.cell .date { font-size: 21px; margin-top: -2px; color: var(--ink); line-height: 1.1; }
+.cell .dim-t { font-size: 12px; color: #B9AE9C; }
+.cell-name { font-size: 12px; color: var(--ink-2); margin-top: 3px; text-align: center; line-height: 1.3; }
+.cell.fresh { animation: sparkle 1s steps(3) .5s 3; }
+.cell.fresh::after { content: '✦'; position: absolute; top: 4px; right: 8px; color: var(--amber); font-size: 18px; animation: twinkle .7s steps(2) infinite alternate; }
+@keyframes sparkle { 50% { box-shadow: 0 0 0 5px rgba(244, 184, 96, .8); } }
 @keyframes twinkle { to { transform: scale(1.5) rotate(30deg); opacity: .4; } }
 .journal-foot { margin-top: 22px; text-align: center; }
-.journal-foot p { margin: 0; font-size: 18px; }
-.reset { margin-top: 18px; font-size: 12px; color: #b0a493; text-decoration: underline; }
+.journal-foot p { margin: 0; font-size: 21px; }
+.reset { margin-top: 18px; font-size: 12px; color: #B0A493; text-decoration: underline; }
 
+/* 표지: 남색 천 + 스티치 + 주홍 고무줄 + 종이 라벨 */
 .cover {
   position: absolute; inset: 0; transform-origin: left center; transition: transform .6s cubic-bezier(.55,.05,.35,1), opacity .2s linear .5s;
-  border-radius: 6px 16px 16px 6px; background: #34405e; color: #f7f2e8; box-shadow: 0 18px 40px rgba(0,0,0,.35); backface-visibility: hidden;
-  background-image: var(--noise), repeating-linear-gradient(45deg, rgba(255,255,255,.03) 0 6px, transparent 6px 12px);
+  background: var(--navy); color: var(--paper); backface-visibility: hidden; cursor: pointer;
+  background-image: var(--noise), repeating-linear-gradient(45deg, rgba(255,255,255,.035) 0 4px, transparent 4px 8px);
+  box-shadow: inset 10px 0 0 #2F3858, inset 0 0 0 2px var(--ink), 6px 6px 0 rgba(20, 22, 40, .35);
+}
+.cover::before { /* 스티치 */
+  content: ''; position: absolute; inset: 12px 12px 12px 22px; border: 2px dashed rgba(247, 242, 232, .3); pointer-events: none;
 }
 .cover.open { transform: rotateY(-170deg); opacity: 0; pointer-events: none; }
-.cover::before { content: ''; position: absolute; left: 14px; top: 0; bottom: 0; width: 10px; background: var(--red); opacity: .9; }
-.cover-in { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
-.cover h1 { margin: 10px 0; font-size: 48px; line-height: .95; letter-spacing: 2px; }
-.cover p { margin: 0; font-size: 24px; opacity: .85; }
-.cover-label { background: #f7f2e8; color: var(--ink); padding: 4px 14px; border-radius: 4px; font-size: 18px; transform: rotate(-3deg); }
-.cover-flakes { margin-top: 20px; font-size: 24px; letter-spacing: 10px; color: #a9c4dc; }
-.cover-count { position: absolute; bottom: 24px; font-size: 18px; opacity: .8; }
+.cover-band, .loading-book .cover-band {
+  position: absolute; top: 0; bottom: 0; right: 30px; width: 12px; background: var(--red);
+  box-shadow: inset 3px 0 0 #EC8068, inset -3px 0 0 var(--red-d), 0 0 0 2px var(--ink); z-index: 1;
+}
+.loading-book .cover-band { right: 22px; width: 10px; }
+.cover-in { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 22px; text-align: center; }
+.cover-label {
+  position: relative; z-index: 2; padding: 12px 20px 10px; color: var(--ink); transform: rotate(-2deg); text-align: center;
+  background: var(--card) var(--noise); box-shadow: 0 0 0 2px var(--ink), inset 0 0 0 4px var(--card), inset 0 0 0 6px #E2D8C6, 5px 5px 0 2px rgba(20, 22, 40, .3);
+}
+.cover-label small { display: block; white-space: nowrap; font-size: 12px; letter-spacing: 1px; color: var(--red); font-weight: 700; }
+.cover-label h1 { margin: 6px 0; font-size: 24px; line-height: 1.15; letter-spacing: 2px; font-weight: 700; }
+.cover-label p { margin: 0; font-size: 19px; color: var(--ink-2); }
+.cover-flakes { font-size: 36px; color: var(--sky); line-height: 1; }
+.cover-count { position: absolute; bottom: 26px; font-size: 12px; letter-spacing: 2px; color: rgba(247, 242, 232, .75); }
 
 /* 기록 보기 (일기장 한 페이지) */
-.diary { z-index: 35; }
-.lined { background-image: var(--noise), repeating-linear-gradient(transparent 0 33px, rgba(120,150,190,.22) 33px 34px); }
+.diary { z-index: 35; padding-left: 46px; }
+.diary .ss-head { margin-left: -32px; }
+.weather-row { display: flex; align-items: center; gap: 12px; margin: -4px 0 18px; font-size: 12px; color: var(--ink-3); }
+.weather-row i { font-style: normal; font-size: 18px; color: #B9B2A5; position: relative; }
+.weather-row i.circled { color: var(--navy); }
+.weather-row i.circled::after { /* 펜으로 동그라미 친 것처럼 */
+  content: ''; position: absolute; inset: -6px -7px -5px -6px; border: 2px solid var(--red); border-radius: 48% 52% 45% 55%; transform: rotate(-8deg);
+}
 .diary-body { position: relative; padding-top: 8px; }
-.polaroid.big { width: 78%; margin: 0 auto; }
-.polaroid .cap { position: absolute; bottom: 3px; left: 0; right: 0; text-align: center; font-size: 12px; color: #8a7d6c; }
+.polaroid.big { width: 82%; margin: 0 auto; }
 .photo-wrap { position: relative; }
-.diary-stamp { position: absolute; right: -4px; bottom: -44px; width: 104px; transform: rotate(10deg); opacity: .92; z-index: 2; }
-.diary-note { font-size: 24px; color: var(--ink); line-height: 34px; margin: 52px 96px 10px 0; min-height: 68px; }
+.diary-stamp { position: absolute; right: -10px; bottom: -46px; width: 108px; transform: rotate(10deg); z-index: 2; mix-blend-mode: multiply; }
+.diary-note { font-size: 26px; color: var(--ink); line-height: 34px; margin: 52px 90px 10px 0; min-height: 68px; }
 .edit-btn { margin-top: 6px; }
 .edit { margin-top: 34px; }
 .row { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
 
 /* 완성 페이지 */
-.complete { position: absolute; inset: 0; z-index: 36; overflow-y: auto; text-align: center; padding: calc(70px + var(--safe-t)) 22px calc(28px + var(--safe-b)); animation: slideUp .4s ease; }
+.complete { position: absolute; inset: 0; z-index: 36; overflow-y: auto; text-align: center; padding: calc(78px + var(--safe-t)) 22px calc(28px + var(--safe-b)); animation: slideUp .4s ease; }
 .complete > * { max-width: 420px; margin-left: auto; margin-right: auto; }
-.cb { position: absolute; top: calc(52px + var(--safe-t)); left: 14px; }
-.complete .sub { margin: 0; color: var(--red); letter-spacing: 2px; font-size: 18px; }
-.complete h2 { margin: 2px 0; font-size: 42px; color: var(--ink); }
-.complete .muted { margin: 0 0 18px; font-size: 18px; }
-.lights { position: absolute; left: 0; right: 0; top: var(--safe-t); height: 50px; display: flex; justify-content: space-around; max-width: none;
-  background: radial-gradient(ellipse 60% 30px at 50% 0, transparent 92%, #3d4a3d 93%, #3d4a3d 96%, transparent 97%) repeat-x; background-size: 25% 40px; }
-.lights i { width: 14px; height: 20px; margin-top: 18px; border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%; position: relative;
-  animation: blink 1s ease-in-out infinite alternate; }
-.lights i::before { content: ''; position: absolute; top: -5px; left: 3px; width: 8px; height: 6px; background: #556; border-radius: 2px; }
-.lights i:nth-child(5n+1) { background: #ff5a5a; color: #ff5a5a; }
-.lights i:nth-child(5n+2) { background: #ffd25a; color: #ffd25a; }
-.lights i:nth-child(5n+3) { background: #5ad1ff; color: #5ad1ff; }
-.lights i:nth-child(5n+4) { background: #7be37b; color: #7be37b; }
-.lights i:nth-child(5n+5) { background: #ff8ad8; color: #ff8ad8; }
-@keyframes blink { from { box-shadow: 0 0 4px 1px currentColor; opacity: .55; } to { box-shadow: 0 0 16px 5px currentColor; opacity: 1; } }
-.mini-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; margin: 0 auto 22px; }
-.mini-grid img { width: 100%; animation: popIn .4s cubic-bezier(.2,1.4,.4,1) backwards; }
-.share-modal { position: fixed; inset: 0; z-index: 70; background: rgba(20,24,36,.7); display: grid; place-items: center; padding: 20px; animation: dimIn .2s; }
-.share-box { background: #fff; border-radius: 18px; padding: 14px; width: min(380px, 100%); max-height: 100%; overflow: auto; }
-.share-box img { width: 100%; border-radius: 8px; display: block; box-shadow: 0 2px 10px rgba(0,0,0,.12); }
+.cb { position: absolute; top: calc(56px + var(--safe-t)); left: 14px; }
+.complete .sub { margin: 0; color: var(--red); letter-spacing: 1px; font-size: 12px; font-weight: 700; }
+.complete h2 { margin: 6px 0 2px; font-size: 36px; font-weight: 700; color: var(--ink); }
+.complete .muted { margin: 0 0 18px; font-size: 22px; }
+/* 도트 전구 줄 */
+.lights { position: absolute; left: 0; right: 0; top: var(--safe-t); height: 46px; display: flex; justify-content: space-around; max-width: none;
+  background: linear-gradient(var(--ink), var(--ink)) 0 14px / 100% 2px no-repeat; }
+.lights i { width: 10px; height: 14px; margin-top: 18px; position: relative; animation: blink 1s steps(2) infinite alternate; box-shadow: 0 0 0 2px var(--ink); }
+.lights i::before { content: ''; position: absolute; top: -6px; left: 2px; width: 6px; height: 4px; background: var(--ink); }
+.lights i:nth-child(4n+1) { background: var(--red); color: var(--red); }
+.lights i:nth-child(4n+2) { background: var(--amber); color: var(--amber); }
+.lights i:nth-child(4n+3) { background: #7FA9D6; color: #7FA9D6; }
+.lights i:nth-child(4n+4) { background: #6FA58A; color: #6FA58A; }
+@keyframes blink { from { opacity: .55; } to { opacity: 1; box-shadow: 0 0 0 2px var(--ink), 0 0 14px 4px currentColor; } }
+.mini-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; margin: 0 auto 22px; padding: 12px; background: rgba(255,255,255,.5); outline: 2px dashed #C3B9A8; }
+.mini-grid img { width: 100%; mix-blend-mode: multiply; animation: popIn .4s cubic-bezier(.2,1.4,.4,1) backwards; }
+.share-modal { position: fixed; inset: 0; z-index: 70; background: rgba(20, 22, 40, .7); display: grid; place-items: center; padding: 20px; animation: dimIn .2s; }
+.share-box { padding: 8px; width: min(380px, 100%); max-height: 100%; overflow: auto; }
+.share-box img { width: 100%; display: block; box-shadow: 0 0 0 2px var(--ink); }
 .share-box .row { margin-top: 12px; }
 
-@media (min-width: 700px) {
-  .hint { font-size: 18px; }
-}
-
-/* ── 도트 UI: 각진 모서리 + 딱 떨어지는 그림자 ── */
-.osm-credit { position: absolute; left: 8px; bottom: calc(4px + var(--safe-b)); z-index: 4; font-size: 12px; color: rgba(52,64,94,.6); pointer-events: none; }
-.app.pixel .dots i { border-radius: 0; }
-.pixel-canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; touch-action: none; image-rendering: pixelated; }
-
-/* ── 종이 지도 버튼 + 종이 지도 ── */
-.map-fab {
-  position: absolute; right: 14px; bottom: calc(96px + var(--safe-b)); z-index: 5; width: 64px; height: 68px;
-  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px;
-  color: var(--ink);
-  animation: popIn .35s cubic-bezier(.2,1.4,.4,1);
-}
-.map-fab span { font-size: 12px; font-weight: 700; line-height: 1; }
-.pm-dim { position: absolute; inset: 0; z-index: 22; display: grid; place-items: center; padding: calc(14px + var(--safe-t)) 12px calc(14px + var(--safe-b)); background: rgba(40,46,66,.5); animation: dimIn .2s; }
-.pm-card { position: relative; width: min(420px, 100%); max-height: 100%; overflow: auto; padding: 16px 12px 14px; border-radius: 4px;
-  box-shadow: 0 0 0 2px var(--ink), 5px 5px 0 2px rgba(52,64,94,.3); animation: popIn .3s cubic-bezier(.2,1.3,.4,1); }
-.pm-tape { position: absolute; top: -8px; left: 50%; margin-left: -40px; }
+/* ── 종이 지도 ── */
+.pm-dim { position: absolute; inset: 0; z-index: 22; display: grid; place-items: center; padding: calc(14px + var(--safe-t)) 12px calc(14px + var(--safe-b)); background: rgba(39, 42, 64, .5); animation: dimIn .2s; }
+.pm-card { position: relative; width: min(420px, 100%); max-height: 100%; overflow: auto; padding: 14px 8px 8px; filter: drop-shadow(5px 5px 0 rgba(20, 22, 40, .35)); animation: popIn .3s cubic-bezier(.2,1.3,.4,1); }
+.pm-tape { top: -6px; }
 .pm-head { text-align: center; margin-bottom: 10px; }
-.pm-head h2 { margin: 0; font-size: 30px; color: var(--ink); line-height: 1; }
-.pm-head p { margin: 4px 0 0; font-size: 12px; color: #9a8d7c; }
+.pm-head h2 { margin: 0; font-size: 24px; font-weight: 700; color: var(--ink); line-height: 1.1; }
+.pm-head p { margin: 2px 0 0; font-size: 19px; color: var(--ink-3); }
 .pm-body { display: flex; gap: 10px; align-items: flex-start; }
-.pm-map { position: relative; flex: none; border-radius: 3px; background: rgba(255,255,255,.4); box-shadow: inset 0 0 0 2px #d9ccb6; }
+.pm-map { position: relative; flex: none; background: var(--grid), rgba(255,255,255,.4); box-shadow: 0 0 0 2px #D9CDB8; }
 .pm-map canvas { position: absolute; inset: 0; width: 100%; height: 100%; image-rendering: pixelated; }
-.pm-compass { position: absolute; right: 4px; top: 2px; font-size: 12px; color: var(--ink); opacity: .7; }
-.pm-start { position: absolute; transform: translate(-100%, -50%); font-size: 12px; color: var(--red); white-space: nowrap; pointer-events: none; }
+.pm-compass { position: absolute; right: 4px; top: 2px; font-size: 12px; font-weight: 700; color: var(--red); }
+.pm-start { position: absolute; transform: translate(-100%, -50%); font-size: 18px; color: var(--red); white-space: nowrap; pointer-events: none; }
 .pm-pin {
-  position: absolute; transform: translate(-50%, -50%); width: 19px; height: 19px; border-radius: 3px; padding: 0;
-  color: #fff; font: 700 12px/19px var(--body); text-align: center; box-shadow: 0 0 0 1.5px #fff, 0 0 0 3px var(--ink); z-index: 1;
+  position: absolute; transform: translate(-50%, -50%); width: 19px; height: 19px; padding: 0;
+  color: #fff; font: 700 12px/19px var(--pixel); text-align: center; box-shadow: 0 0 0 1.5px #fff, 0 0 0 3px var(--ink); z-index: 1;
   transition: transform .12s;
 }
-.pm-pin.done::after { content: '✓'; position: absolute; right: -7px; top: -8px; width: 12px; height: 12px; border-radius: 2px; background: #f0b429; color: #fff; font-size: 12px; line-height: 12px; }
+.pm-pin.done::after { content: '✓'; position: absolute; right: -7px; top: -8px; width: 12px; height: 12px; background: var(--red); color: #fff; font-size: 12px; line-height: 12px; }
 .pm-pin.hot, .pm-pin:hover { transform: translate(-50%, -50%) scale(1.3); z-index: 3; }
-.pm-me { position: absolute; transform: translate(-50%, -50%); display: flex; align-items: center; gap: 2px; font: 700 12px var(--body); color: var(--red); pointer-events: none; z-index: 2; }
-.pm-me i { width: 9px; height: 9px; background: #e58c8f; box-shadow: 0 0 0 1.5px #fff, 0 0 0 3px var(--ink); animation: pmPulse 1.2s ease-in-out infinite; }
+.pm-me { position: absolute; transform: translate(-50%, -50%); display: flex; align-items: center; gap: 2px; font: 700 12px var(--pixel); color: var(--red); pointer-events: none; z-index: 2; }
+.pm-me i { width: 9px; height: 9px; background: var(--red); box-shadow: 0 0 0 1.5px #fff, 0 0 0 3px var(--ink); animation: pmPulse 1.2s steps(2) infinite; }
 @keyframes pmPulse { 50% { transform: scale(1.35); } }
 .pm-list { flex: 1; min-width: 0; margin: 0; padding: 0; list-style: none; overflow-y: auto; }
 .pm-list li + li { margin-top: 2px; }
-.pm-list button { width: 100%; display: flex; align-items: center; gap: 6px; padding: 4px 5px; border-radius: 3px; text-align: left; }
-.pm-list button.hot, .pm-list button:hover { background: rgba(52,64,94,.08); }
-.pm-list .num { flex: none; width: 18px; height: 18px; border-radius: 3px; color: #fff; font: 700 12px/18px var(--body); text-align: center; }
-.pm-list .nm { min-width: 0; display: flex; flex-direction: column; line-height: 1.15; }
+.pm-list button { width: 100%; display: flex; align-items: center; gap: 6px; padding: 4px 5px; text-align: left; }
+.pm-list button.hot, .pm-list button:hover { background: rgba(39, 42, 64, .08); }
+.pm-list .num { flex: none; width: 18px; height: 18px; color: #fff; font: 700 12px/18px var(--pixel); text-align: center; }
+.pm-list .nm { min-width: 0; display: flex; flex-direction: column; line-height: 1.2; }
 .pm-list .nm b { font-size: 12px; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.pm-list .nm small { font-size: 12px; color: #a39581; }
-.pm-list .ok { margin-left: auto; color: #f0b429; font-weight: 700; }
+.pm-list .nm small { font-size: 12px; color: var(--ink-3); }
+.pm-list .ok { margin-left: auto; color: var(--red); font-weight: 700; }
 
-/* ── 픽셀 테두리 프레임 (8x8 도트 SVG 를 border-image 로: 각진 모서리 + 위·왼쪽 밝은 면, 아래·오른쪽 그늘) ── */
-:root {
-  --px-paper: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%208%208%22%20width%3D%228%22%20height%3D%228%22%20shape-rendering%3D%22crispEdges%22%3E%3Crect%20x%3D%222%22%20y%3D%220%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%2334405e%22/%3E%3Crect%20x%3D%223%22%20y%3D%220%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%2334405e%22/%3E%3Crect%20x%3D%224%22%20y%3D%220%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%2334405e%22/%3E%3Crect%20x%3D%225%22%20y%3D%220%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%2334405e%22/%3E%3Crect%20x%3D%221%22%20y%3D%221%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%2334405e%22/%3E%3Crect%20x%3D%222%22%20y%3D%221%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23FFFFFF%22/%3E%3Crect%20x%3D%223%22%20y%3D%221%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23FFFFFF%22/%3E%3Crect%20x%3D%224%22%20y%3D%221%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23FFFFFF%22/%3E%3Crect%20x%3D%225%22%20y%3D%221%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23FFFFFF%22/%3E%3Crect%20x%3D%226%22%20y%3D%221%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%2334405e%22/%3E%3Crect%20x%3D%220%22%20y%3D%222%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%2334405e%22/%3E%3Crect%20x%3D%221%22%20y%3D%222%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23FFFFFF%22/%3E%3Crect%20x%3D%222%22%20y%3D%222%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23FFFAF0%22/%3E%3Crect%20x%3D%223%22%20y%3D%222%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23FFFAF0%22/%3E%3Crect%20x%3D%224%22%20y%3D%222%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23FFFAF0%22/%3E%3Crect%20x%3D%225%22%20y%3D%222%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23FFFAF0%22/%3E%3Crect%20x%3D%226%22%20y%3D%222%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23E6D9C3%22/%3E%3Crect%20x%3D%227%22%20y%3D%222%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%2334405e%22/%3E%3Crect%20x%3D%220%22%20y%3D%223%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%2334405e%22/%3E%3Crect%20x%3D%221%22%20y%3D%223%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23FFFFFF%22/%3E%3Crect%20x%3D%222%22%20y%3D%223%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23FFFAF0%22/%3E%3Crect%20x%3D%223%22%20y%3D%223%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23FFFAF0%22/%3E%3Crect%20x%3D%224%22%20y%3D%223%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23FFFAF0%22/%3E%3Crect%20x%3D%225%22%20y%3D%223%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23FFFAF0%22/%3E%3Crect%20x%3D%226%22%20y%3D%223%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23E6D9C3%22/%3E%3Crect%20x%3D%227%22%20y%3D%223%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%2334405e%22/%3E%3Crect%20x%3D%220%22%20y%3D%224%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%2334405e%22/%3E%3Crect%20x%3D%221%22%20y%3D%224%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23FFFFFF%22/%3E%3Crect%20x%3D%222%22%20y%3D%224%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23FFFAF0%22/%3E%3Crect%20x%3D%223%22%20y%3D%224%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23FFFAF0%22/%3E%3Crect%20x%3D%224%22%20y%3D%224%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23FFFAF0%22/%3E%3Crect%20x%3D%225%22%20y%3D%224%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23FFFAF0%22/%3E%3Crect%20x%3D%226%22%20y%3D%224%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23E6D9C3%22/%3E%3Crect%20x%3D%227%22%20y%3D%224%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%2334405e%22/%3E%3Crect%20x%3D%220%22%20y%3D%225%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%2334405e%22/%3E%3Crect%20x%3D%221%22%20y%3D%225%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23FFFFFF%22/%3E%3Crect%20x%3D%222%22%20y%3D%225%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23FFFAF0%22/%3E%3Crect%20x%3D%223%22%20y%3D%225%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23FFFAF0%22/%3E%3Crect%20x%3D%224%22%20y%3D%225%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23FFFAF0%22/%3E%3Crect%20x%3D%225%22%20y%3D%225%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23FFFAF0%22/%3E%3Crect%20x%3D%226%22%20y%3D%225%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23E6D9C3%22/%3E%3Crect%20x%3D%227%22%20y%3D%225%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%2334405e%22/%3E%3Crect%20x%3D%221%22%20y%3D%226%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%2334405e%22/%3E%3Crect%20x%3D%222%22%20y%3D%226%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23E6D9C3%22/%3E%3Crect%20x%3D%223%22%20y%3D%226%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23E6D9C3%22/%3E%3Crect%20x%3D%224%22%20y%3D%226%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23E6D9C3%22/%3E%3Crect%20x%3D%225%22%20y%3D%226%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23E6D9C3%22/%3E%3Crect%20x%3D%226%22%20y%3D%226%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%2334405e%22/%3E%3Crect%20x%3D%222%22%20y%3D%227%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%2334405e%22/%3E%3Crect%20x%3D%223%22%20y%3D%227%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%2334405e%22/%3E%3Crect%20x%3D%224%22%20y%3D%227%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%2334405e%22/%3E%3Crect%20x%3D%225%22%20y%3D%227%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%2334405e%22/%3E%3C/svg%3E");
-  --px-white: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%208%208%22%20width%3D%228%22%20height%3D%228%22%20shape-rendering%3D%22crispEdges%22%3E%3Crect%20x%3D%222%22%20y%3D%220%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%2334405e%22/%3E%3Crect%20x%3D%223%22%20y%3D%220%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%2334405e%22/%3E%3Crect%20x%3D%224%22%20y%3D%220%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%2334405e%22/%3E%3Crect%20x%3D%225%22%20y%3D%220%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%2334405e%22/%3E%3Crect%20x%3D%221%22%20y%3D%221%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%2334405e%22/%3E%3Crect%20x%3D%222%22%20y%3D%221%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23FFFFFF%22/%3E%3Crect%20x%3D%223%22%20y%3D%221%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23FFFFFF%22/%3E%3Crect%20x%3D%224%22%20y%3D%221%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23FFFFFF%22/%3E%3Crect%20x%3D%225%22%20y%3D%221%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23FFFFFF%22/%3E%3Crect%20x%3D%226%22%20y%3D%221%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%2334405e%22/%3E%3Crect%20x%3D%220%22%20y%3D%222%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%2334405e%22/%3E%3Crect%20x%3D%221%22%20y%3D%222%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23FFFFFF%22/%3E%3Crect%20x%3D%222%22%20y%3D%222%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23FFFDF8%22/%3E%3Crect%20x%3D%223%22%20y%3D%222%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23FFFDF8%22/%3E%3Crect%20x%3D%224%22%20y%3D%222%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23FFFDF8%22/%3E%3Crect%20x%3D%225%22%20y%3D%222%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23FFFDF8%22/%3E%3Crect%20x%3D%226%22%20y%3D%222%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23EAE1D2%22/%3E%3Crect%20x%3D%227%22%20y%3D%222%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%2334405e%22/%3E%3Crect%20x%3D%220%22%20y%3D%223%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%2334405e%22/%3E%3Crect%20x%3D%221%22%20y%3D%223%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23FFFFFF%22/%3E%3Crect%20x%3D%222%22%20y%3D%223%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23FFFDF8%22/%3E%3Crect%20x%3D%223%22%20y%3D%223%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23FFFDF8%22/%3E%3Crect%20x%3D%224%22%20y%3D%223%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23FFFDF8%22/%3E%3Crect%20x%3D%225%22%20y%3D%223%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23FFFDF8%22/%3E%3Crect%20x%3D%226%22%20y%3D%223%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23EAE1D2%22/%3E%3Crect%20x%3D%227%22%20y%3D%223%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%2334405e%22/%3E%3Crect%20x%3D%220%22%20y%3D%224%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%2334405e%22/%3E%3Crect%20x%3D%221%22%20y%3D%224%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23FFFFFF%22/%3E%3Crect%20x%3D%222%22%20y%3D%224%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23FFFDF8%22/%3E%3Crect%20x%3D%223%22%20y%3D%224%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23FFFDF8%22/%3E%3Crect%20x%3D%224%22%20y%3D%224%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23FFFDF8%22/%3E%3Crect%20x%3D%225%22%20y%3D%224%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23FFFDF8%22/%3E%3Crect%20x%3D%226%22%20y%3D%224%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23EAE1D2%22/%3E%3Crect%20x%3D%227%22%20y%3D%224%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%2334405e%22/%3E%3Crect%20x%3D%220%22%20y%3D%225%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%2334405e%22/%3E%3Crect%20x%3D%221%22%20y%3D%225%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23FFFFFF%22/%3E%3Crect%20x%3D%222%22%20y%3D%225%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23FFFDF8%22/%3E%3Crect%20x%3D%223%22%20y%3D%225%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23FFFDF8%22/%3E%3Crect%20x%3D%224%22%20y%3D%225%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23FFFDF8%22/%3E%3Crect%20x%3D%225%22%20y%3D%225%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23FFFDF8%22/%3E%3Crect%20x%3D%226%22%20y%3D%225%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23EAE1D2%22/%3E%3Crect%20x%3D%227%22%20y%3D%225%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%2334405e%22/%3E%3Crect%20x%3D%221%22%20y%3D%226%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%2334405e%22/%3E%3Crect%20x%3D%222%22%20y%3D%226%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23EAE1D2%22/%3E%3Crect%20x%3D%223%22%20y%3D%226%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23EAE1D2%22/%3E%3Crect%20x%3D%224%22%20y%3D%226%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23EAE1D2%22/%3E%3Crect%20x%3D%225%22%20y%3D%226%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23EAE1D2%22/%3E%3Crect%20x%3D%226%22%20y%3D%226%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%2334405e%22/%3E%3Crect%20x%3D%222%22%20y%3D%227%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%2334405e%22/%3E%3Crect%20x%3D%223%22%20y%3D%227%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%2334405e%22/%3E%3Crect%20x%3D%224%22%20y%3D%227%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%2334405e%22/%3E%3Crect%20x%3D%225%22%20y%3D%227%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%2334405e%22/%3E%3C/svg%3E");
-  --px-ink: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%208%208%22%20width%3D%228%22%20height%3D%228%22%20shape-rendering%3D%22crispEdges%22%3E%3Crect%20x%3D%222%22%20y%3D%220%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%231C2233%22/%3E%3Crect%20x%3D%223%22%20y%3D%220%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%231C2233%22/%3E%3Crect%20x%3D%224%22%20y%3D%220%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%231C2233%22/%3E%3Crect%20x%3D%225%22%20y%3D%220%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%231C2233%22/%3E%3Crect%20x%3D%221%22%20y%3D%221%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%231C2233%22/%3E%3Crect%20x%3D%222%22%20y%3D%221%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%234D5A7C%22/%3E%3Crect%20x%3D%223%22%20y%3D%221%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%234D5A7C%22/%3E%3Crect%20x%3D%224%22%20y%3D%221%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%234D5A7C%22/%3E%3Crect%20x%3D%225%22%20y%3D%221%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%234D5A7C%22/%3E%3Crect%20x%3D%226%22%20y%3D%221%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%231C2233%22/%3E%3Crect%20x%3D%220%22%20y%3D%222%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%231C2233%22/%3E%3Crect%20x%3D%221%22%20y%3D%222%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%234D5A7C%22/%3E%3Crect%20x%3D%222%22%20y%3D%222%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%2334405E%22/%3E%3Crect%20x%3D%223%22%20y%3D%222%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%2334405E%22/%3E%3Crect%20x%3D%224%22%20y%3D%222%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%2334405E%22/%3E%3Crect%20x%3D%225%22%20y%3D%222%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%2334405E%22/%3E%3Crect%20x%3D%226%22%20y%3D%222%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23252E47%22/%3E%3Crect%20x%3D%227%22%20y%3D%222%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%231C2233%22/%3E%3Crect%20x%3D%220%22%20y%3D%223%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%231C2233%22/%3E%3Crect%20x%3D%221%22%20y%3D%223%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%234D5A7C%22/%3E%3Crect%20x%3D%222%22%20y%3D%223%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%2334405E%22/%3E%3Crect%20x%3D%223%22%20y%3D%223%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%2334405E%22/%3E%3Crect%20x%3D%224%22%20y%3D%223%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%2334405E%22/%3E%3Crect%20x%3D%225%22%20y%3D%223%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%2334405E%22/%3E%3Crect%20x%3D%226%22%20y%3D%223%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23252E47%22/%3E%3Crect%20x%3D%227%22%20y%3D%223%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%231C2233%22/%3E%3Crect%20x%3D%220%22%20y%3D%224%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%231C2233%22/%3E%3Crect%20x%3D%221%22%20y%3D%224%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%234D5A7C%22/%3E%3Crect%20x%3D%222%22%20y%3D%224%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%2334405E%22/%3E%3Crect%20x%3D%223%22%20y%3D%224%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%2334405E%22/%3E%3Crect%20x%3D%224%22%20y%3D%224%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%2334405E%22/%3E%3Crect%20x%3D%225%22%20y%3D%224%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%2334405E%22/%3E%3Crect%20x%3D%226%22%20y%3D%224%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23252E47%22/%3E%3Crect%20x%3D%227%22%20y%3D%224%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%231C2233%22/%3E%3Crect%20x%3D%220%22%20y%3D%225%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%231C2233%22/%3E%3Crect%20x%3D%221%22%20y%3D%225%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%234D5A7C%22/%3E%3Crect%20x%3D%222%22%20y%3D%225%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%2334405E%22/%3E%3Crect%20x%3D%223%22%20y%3D%225%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%2334405E%22/%3E%3Crect%20x%3D%224%22%20y%3D%225%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%2334405E%22/%3E%3Crect%20x%3D%225%22%20y%3D%225%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%2334405E%22/%3E%3Crect%20x%3D%226%22%20y%3D%225%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23252E47%22/%3E%3Crect%20x%3D%227%22%20y%3D%225%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%231C2233%22/%3E%3Crect%20x%3D%221%22%20y%3D%226%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%231C2233%22/%3E%3Crect%20x%3D%222%22%20y%3D%226%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23252E47%22/%3E%3Crect%20x%3D%223%22%20y%3D%226%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23252E47%22/%3E%3Crect%20x%3D%224%22%20y%3D%226%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23252E47%22/%3E%3Crect%20x%3D%225%22%20y%3D%226%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23252E47%22/%3E%3Crect%20x%3D%226%22%20y%3D%226%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%231C2233%22/%3E%3Crect%20x%3D%222%22%20y%3D%227%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%231C2233%22/%3E%3Crect%20x%3D%223%22%20y%3D%227%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%231C2233%22/%3E%3Crect%20x%3D%224%22%20y%3D%227%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%231C2233%22/%3E%3Crect%20x%3D%225%22%20y%3D%227%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%231C2233%22/%3E%3C/svg%3E");
-  --px-red: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%208%208%22%20width%3D%228%22%20height%3D%228%22%20shape-rendering%3D%22crispEdges%22%3E%3Crect%20x%3D%222%22%20y%3D%220%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%2334405e%22/%3E%3Crect%20x%3D%223%22%20y%3D%220%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%2334405e%22/%3E%3Crect%20x%3D%224%22%20y%3D%220%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%2334405e%22/%3E%3Crect%20x%3D%225%22%20y%3D%220%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%2334405e%22/%3E%3Crect%20x%3D%221%22%20y%3D%221%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%2334405e%22/%3E%3Crect%20x%3D%222%22%20y%3D%221%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23D97C74%22/%3E%3Crect%20x%3D%223%22%20y%3D%221%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23D97C74%22/%3E%3Crect%20x%3D%224%22%20y%3D%221%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23D97C74%22/%3E%3Crect%20x%3D%225%22%20y%3D%221%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23D97C74%22/%3E%3Crect%20x%3D%226%22%20y%3D%221%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%2334405e%22/%3E%3Crect%20x%3D%220%22%20y%3D%222%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%2334405e%22/%3E%3Crect%20x%3D%221%22%20y%3D%222%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23D97C74%22/%3E%3Crect%20x%3D%222%22%20y%3D%222%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23C25B56%22/%3E%3Crect%20x%3D%223%22%20y%3D%222%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23C25B56%22/%3E%3Crect%20x%3D%224%22%20y%3D%222%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23C25B56%22/%3E%3Crect%20x%3D%225%22%20y%3D%222%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23C25B56%22/%3E%3Crect%20x%3D%226%22%20y%3D%222%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%239B4541%22/%3E%3Crect%20x%3D%227%22%20y%3D%222%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%2334405e%22/%3E%3Crect%20x%3D%220%22%20y%3D%223%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%2334405e%22/%3E%3Crect%20x%3D%221%22%20y%3D%223%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23D97C74%22/%3E%3Crect%20x%3D%222%22%20y%3D%223%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23C25B56%22/%3E%3Crect%20x%3D%223%22%20y%3D%223%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23C25B56%22/%3E%3Crect%20x%3D%224%22%20y%3D%223%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23C25B56%22/%3E%3Crect%20x%3D%225%22%20y%3D%223%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23C25B56%22/%3E%3Crect%20x%3D%226%22%20y%3D%223%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%239B4541%22/%3E%3Crect%20x%3D%227%22%20y%3D%223%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%2334405e%22/%3E%3Crect%20x%3D%220%22%20y%3D%224%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%2334405e%22/%3E%3Crect%20x%3D%221%22%20y%3D%224%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23D97C74%22/%3E%3Crect%20x%3D%222%22%20y%3D%224%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23C25B56%22/%3E%3Crect%20x%3D%223%22%20y%3D%224%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23C25B56%22/%3E%3Crect%20x%3D%224%22%20y%3D%224%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23C25B56%22/%3E%3Crect%20x%3D%225%22%20y%3D%224%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23C25B56%22/%3E%3Crect%20x%3D%226%22%20y%3D%224%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%239B4541%22/%3E%3Crect%20x%3D%227%22%20y%3D%224%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%2334405e%22/%3E%3Crect%20x%3D%220%22%20y%3D%225%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%2334405e%22/%3E%3Crect%20x%3D%221%22%20y%3D%225%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23D97C74%22/%3E%3Crect%20x%3D%222%22%20y%3D%225%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23C25B56%22/%3E%3Crect%20x%3D%223%22%20y%3D%225%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23C25B56%22/%3E%3Crect%20x%3D%224%22%20y%3D%225%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23C25B56%22/%3E%3Crect%20x%3D%225%22%20y%3D%225%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23C25B56%22/%3E%3Crect%20x%3D%226%22%20y%3D%225%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%239B4541%22/%3E%3Crect%20x%3D%227%22%20y%3D%225%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%2334405e%22/%3E%3Crect%20x%3D%221%22%20y%3D%226%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%2334405e%22/%3E%3Crect%20x%3D%222%22%20y%3D%226%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%239B4541%22/%3E%3Crect%20x%3D%223%22%20y%3D%226%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%239B4541%22/%3E%3Crect%20x%3D%224%22%20y%3D%226%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%239B4541%22/%3E%3Crect%20x%3D%225%22%20y%3D%226%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%239B4541%22/%3E%3Crect%20x%3D%226%22%20y%3D%226%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%2334405e%22/%3E%3Crect%20x%3D%222%22%20y%3D%227%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%2334405e%22/%3E%3Crect%20x%3D%223%22%20y%3D%227%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%2334405e%22/%3E%3Crect%20x%3D%224%22%20y%3D%227%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%2334405e%22/%3E%3Crect%20x%3D%225%22%20y%3D%227%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%2334405e%22/%3E%3C/svg%3E");
-  --px-green: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%208%208%22%20width%3D%228%22%20height%3D%228%22%20shape-rendering%3D%22crispEdges%22%3E%3Crect%20x%3D%222%22%20y%3D%220%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%2334405e%22/%3E%3Crect%20x%3D%223%22%20y%3D%220%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%2334405e%22/%3E%3Crect%20x%3D%224%22%20y%3D%220%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%2334405e%22/%3E%3Crect%20x%3D%225%22%20y%3D%220%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%2334405e%22/%3E%3Crect%20x%3D%221%22%20y%3D%221%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%2334405e%22/%3E%3Crect%20x%3D%222%22%20y%3D%221%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%235B9474%22/%3E%3Crect%20x%3D%223%22%20y%3D%221%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%235B9474%22/%3E%3Crect%20x%3D%224%22%20y%3D%221%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%235B9474%22/%3E%3Crect%20x%3D%225%22%20y%3D%221%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%235B9474%22/%3E%3Crect%20x%3D%226%22%20y%3D%221%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%2334405e%22/%3E%3Crect%20x%3D%220%22%20y%3D%222%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%2334405e%22/%3E%3Crect%20x%3D%221%22%20y%3D%222%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%235B9474%22/%3E%3Crect%20x%3D%222%22%20y%3D%222%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%233F7A5A%22/%3E%3Crect%20x%3D%223%22%20y%3D%222%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%233F7A5A%22/%3E%3Crect%20x%3D%224%22%20y%3D%222%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%233F7A5A%22/%3E%3Crect%20x%3D%225%22%20y%3D%222%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%233F7A5A%22/%3E%3Crect%20x%3D%226%22%20y%3D%222%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%232B5A40%22/%3E%3Crect%20x%3D%227%22%20y%3D%222%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%2334405e%22/%3E%3Crect%20x%3D%220%22%20y%3D%223%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%2334405e%22/%3E%3Crect%20x%3D%221%22%20y%3D%223%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%235B9474%22/%3E%3Crect%20x%3D%222%22%20y%3D%223%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%233F7A5A%22/%3E%3Crect%20x%3D%223%22%20y%3D%223%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%233F7A5A%22/%3E%3Crect%20x%3D%224%22%20y%3D%223%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%233F7A5A%22/%3E%3Crect%20x%3D%225%22%20y%3D%223%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%233F7A5A%22/%3E%3Crect%20x%3D%226%22%20y%3D%223%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%232B5A40%22/%3E%3Crect%20x%3D%227%22%20y%3D%223%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%2334405e%22/%3E%3Crect%20x%3D%220%22%20y%3D%224%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%2334405e%22/%3E%3Crect%20x%3D%221%22%20y%3D%224%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%235B9474%22/%3E%3Crect%20x%3D%222%22%20y%3D%224%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%233F7A5A%22/%3E%3Crect%20x%3D%223%22%20y%3D%224%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%233F7A5A%22/%3E%3Crect%20x%3D%224%22%20y%3D%224%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%233F7A5A%22/%3E%3Crect%20x%3D%225%22%20y%3D%224%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%233F7A5A%22/%3E%3Crect%20x%3D%226%22%20y%3D%224%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%232B5A40%22/%3E%3Crect%20x%3D%227%22%20y%3D%224%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%2334405e%22/%3E%3Crect%20x%3D%220%22%20y%3D%225%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%2334405e%22/%3E%3Crect%20x%3D%221%22%20y%3D%225%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%235B9474%22/%3E%3Crect%20x%3D%222%22%20y%3D%225%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%233F7A5A%22/%3E%3Crect%20x%3D%223%22%20y%3D%225%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%233F7A5A%22/%3E%3Crect%20x%3D%224%22%20y%3D%225%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%233F7A5A%22/%3E%3Crect%20x%3D%225%22%20y%3D%225%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%233F7A5A%22/%3E%3Crect%20x%3D%226%22%20y%3D%225%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%232B5A40%22/%3E%3Crect%20x%3D%227%22%20y%3D%225%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%2334405e%22/%3E%3Crect%20x%3D%221%22%20y%3D%226%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%2334405e%22/%3E%3Crect%20x%3D%222%22%20y%3D%226%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%232B5A40%22/%3E%3Crect%20x%3D%223%22%20y%3D%226%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%232B5A40%22/%3E%3Crect%20x%3D%224%22%20y%3D%226%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%232B5A40%22/%3E%3Crect%20x%3D%225%22%20y%3D%226%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%232B5A40%22/%3E%3Crect%20x%3D%226%22%20y%3D%226%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%2334405e%22/%3E%3Crect%20x%3D%222%22%20y%3D%227%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%2334405e%22/%3E%3Crect%20x%3D%223%22%20y%3D%227%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%2334405e%22/%3E%3Crect%20x%3D%224%22%20y%3D%227%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%2334405e%22/%3E%3Crect%20x%3D%225%22%20y%3D%227%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%2334405e%22/%3E%3C/svg%3E");
-  --px-gray: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%208%208%22%20width%3D%228%22%20height%3D%228%22%20shape-rendering%3D%22crispEdges%22%3E%3Crect%20x%3D%222%22%20y%3D%220%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%2334405e%22/%3E%3Crect%20x%3D%223%22%20y%3D%220%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%2334405e%22/%3E%3Crect%20x%3D%224%22%20y%3D%220%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%2334405e%22/%3E%3Crect%20x%3D%225%22%20y%3D%220%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%2334405e%22/%3E%3Crect%20x%3D%221%22%20y%3D%221%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%2334405e%22/%3E%3Crect%20x%3D%222%22%20y%3D%221%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23DDD6CA%22/%3E%3Crect%20x%3D%223%22%20y%3D%221%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23DDD6CA%22/%3E%3Crect%20x%3D%224%22%20y%3D%221%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23DDD6CA%22/%3E%3Crect%20x%3D%225%22%20y%3D%221%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23DDD6CA%22/%3E%3Crect%20x%3D%226%22%20y%3D%221%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%2334405e%22/%3E%3Crect%20x%3D%220%22%20y%3D%222%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%2334405e%22/%3E%3Crect%20x%3D%221%22%20y%3D%222%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23DDD6CA%22/%3E%3Crect%20x%3D%222%22%20y%3D%222%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23CFC6B8%22/%3E%3Crect%20x%3D%223%22%20y%3D%222%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23CFC6B8%22/%3E%3Crect%20x%3D%224%22%20y%3D%222%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23CFC6B8%22/%3E%3Crect%20x%3D%225%22%20y%3D%222%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23CFC6B8%22/%3E%3Crect%20x%3D%226%22%20y%3D%222%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23B3A998%22/%3E%3Crect%20x%3D%227%22%20y%3D%222%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%2334405e%22/%3E%3Crect%20x%3D%220%22%20y%3D%223%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%2334405e%22/%3E%3Crect%20x%3D%221%22%20y%3D%223%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23DDD6CA%22/%3E%3Crect%20x%3D%222%22%20y%3D%223%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23CFC6B8%22/%3E%3Crect%20x%3D%223%22%20y%3D%223%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23CFC6B8%22/%3E%3Crect%20x%3D%224%22%20y%3D%223%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23CFC6B8%22/%3E%3Crect%20x%3D%225%22%20y%3D%223%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23CFC6B8%22/%3E%3Crect%20x%3D%226%22%20y%3D%223%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23B3A998%22/%3E%3Crect%20x%3D%227%22%20y%3D%223%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%2334405e%22/%3E%3Crect%20x%3D%220%22%20y%3D%224%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%2334405e%22/%3E%3Crect%20x%3D%221%22%20y%3D%224%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23DDD6CA%22/%3E%3Crect%20x%3D%222%22%20y%3D%224%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23CFC6B8%22/%3E%3Crect%20x%3D%223%22%20y%3D%224%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23CFC6B8%22/%3E%3Crect%20x%3D%224%22%20y%3D%224%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23CFC6B8%22/%3E%3Crect%20x%3D%225%22%20y%3D%224%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23CFC6B8%22/%3E%3Crect%20x%3D%226%22%20y%3D%224%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23B3A998%22/%3E%3Crect%20x%3D%227%22%20y%3D%224%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%2334405e%22/%3E%3Crect%20x%3D%220%22%20y%3D%225%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%2334405e%22/%3E%3Crect%20x%3D%221%22%20y%3D%225%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23DDD6CA%22/%3E%3Crect%20x%3D%222%22%20y%3D%225%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23CFC6B8%22/%3E%3Crect%20x%3D%223%22%20y%3D%225%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23CFC6B8%22/%3E%3Crect%20x%3D%224%22%20y%3D%225%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23CFC6B8%22/%3E%3Crect%20x%3D%225%22%20y%3D%225%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23CFC6B8%22/%3E%3Crect%20x%3D%226%22%20y%3D%225%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23B3A998%22/%3E%3Crect%20x%3D%227%22%20y%3D%225%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%2334405e%22/%3E%3Crect%20x%3D%221%22%20y%3D%226%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%2334405e%22/%3E%3Crect%20x%3D%222%22%20y%3D%226%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23B3A998%22/%3E%3Crect%20x%3D%223%22%20y%3D%226%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23B3A998%22/%3E%3Crect%20x%3D%224%22%20y%3D%226%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23B3A998%22/%3E%3Crect%20x%3D%225%22%20y%3D%226%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23B3A998%22/%3E%3Crect%20x%3D%226%22%20y%3D%226%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%2334405e%22/%3E%3Crect%20x%3D%222%22%20y%3D%227%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%2334405e%22/%3E%3Crect%20x%3D%223%22%20y%3D%227%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%2334405e%22/%3E%3Crect%20x%3D%224%22%20y%3D%227%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%2334405e%22/%3E%3Crect%20x%3D%225%22%20y%3D%227%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%2334405e%22/%3E%3C/svg%3E");
-  --px-gold: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%208%208%22%20width%3D%228%22%20height%3D%228%22%20shape-rendering%3D%22crispEdges%22%3E%3Crect%20x%3D%222%22%20y%3D%220%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%2334405e%22/%3E%3Crect%20x%3D%223%22%20y%3D%220%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%2334405e%22/%3E%3Crect%20x%3D%224%22%20y%3D%220%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%2334405e%22/%3E%3Crect%20x%3D%225%22%20y%3D%220%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%2334405e%22/%3E%3Crect%20x%3D%221%22%20y%3D%221%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%2334405e%22/%3E%3Crect%20x%3D%222%22%20y%3D%221%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23F7CC63%22/%3E%3Crect%20x%3D%223%22%20y%3D%221%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23F7CC63%22/%3E%3Crect%20x%3D%224%22%20y%3D%221%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23F7CC63%22/%3E%3Crect%20x%3D%225%22%20y%3D%221%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23F7CC63%22/%3E%3Crect%20x%3D%226%22%20y%3D%221%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%2334405e%22/%3E%3Crect%20x%3D%220%22%20y%3D%222%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%2334405e%22/%3E%3Crect%20x%3D%221%22%20y%3D%222%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23F7CC63%22/%3E%3Crect%20x%3D%222%22%20y%3D%222%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23F0B429%22/%3E%3Crect%20x%3D%223%22%20y%3D%222%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23F0B429%22/%3E%3Crect%20x%3D%224%22%20y%3D%222%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23F0B429%22/%3E%3Crect%20x%3D%225%22%20y%3D%222%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23F0B429%22/%3E%3Crect%20x%3D%226%22%20y%3D%222%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23C98E12%22/%3E%3Crect%20x%3D%227%22%20y%3D%222%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%2334405e%22/%3E%3Crect%20x%3D%220%22%20y%3D%223%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%2334405e%22/%3E%3Crect%20x%3D%221%22%20y%3D%223%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23F7CC63%22/%3E%3Crect%20x%3D%222%22%20y%3D%223%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23F0B429%22/%3E%3Crect%20x%3D%223%22%20y%3D%223%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23F0B429%22/%3E%3Crect%20x%3D%224%22%20y%3D%223%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23F0B429%22/%3E%3Crect%20x%3D%225%22%20y%3D%223%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23F0B429%22/%3E%3Crect%20x%3D%226%22%20y%3D%223%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23C98E12%22/%3E%3Crect%20x%3D%227%22%20y%3D%223%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%2334405e%22/%3E%3Crect%20x%3D%220%22%20y%3D%224%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%2334405e%22/%3E%3Crect%20x%3D%221%22%20y%3D%224%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23F7CC63%22/%3E%3Crect%20x%3D%222%22%20y%3D%224%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23F0B429%22/%3E%3Crect%20x%3D%223%22%20y%3D%224%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23F0B429%22/%3E%3Crect%20x%3D%224%22%20y%3D%224%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23F0B429%22/%3E%3Crect%20x%3D%225%22%20y%3D%224%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23F0B429%22/%3E%3Crect%20x%3D%226%22%20y%3D%224%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23C98E12%22/%3E%3Crect%20x%3D%227%22%20y%3D%224%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%2334405e%22/%3E%3Crect%20x%3D%220%22%20y%3D%225%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%2334405e%22/%3E%3Crect%20x%3D%221%22%20y%3D%225%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23F7CC63%22/%3E%3Crect%20x%3D%222%22%20y%3D%225%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23F0B429%22/%3E%3Crect%20x%3D%223%22%20y%3D%225%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23F0B429%22/%3E%3Crect%20x%3D%224%22%20y%3D%225%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23F0B429%22/%3E%3Crect%20x%3D%225%22%20y%3D%225%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23F0B429%22/%3E%3Crect%20x%3D%226%22%20y%3D%225%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23C98E12%22/%3E%3Crect%20x%3D%227%22%20y%3D%225%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%2334405e%22/%3E%3Crect%20x%3D%221%22%20y%3D%226%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%2334405e%22/%3E%3Crect%20x%3D%222%22%20y%3D%226%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23C98E12%22/%3E%3Crect%20x%3D%223%22%20y%3D%226%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23C98E12%22/%3E%3Crect%20x%3D%224%22%20y%3D%226%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23C98E12%22/%3E%3Crect%20x%3D%225%22%20y%3D%226%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23C98E12%22/%3E%3Crect%20x%3D%226%22%20y%3D%226%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%2334405e%22/%3E%3Crect%20x%3D%222%22%20y%3D%227%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%2334405e%22/%3E%3Crect%20x%3D%223%22%20y%3D%227%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%2334405e%22/%3E%3Crect%20x%3D%224%22%20y%3D%227%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%2334405e%22/%3E%3Crect%20x%3D%225%22%20y%3D%227%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%2334405e%22/%3E%3C/svg%3E");
+@media (prefers-reduced-motion: reduce) {
+  .hint, .loading-book, .slot .cta, .lights i { animation: none; }
 }
-.app.pixel :where(.brand, .progress, .journal-btn, .hint, .map-fab, .x, .back, .btn, .sheet, .pm-card, .cell, .slot, .stamp-pad, .share-box, .toast, .primary, .pm-list button.hot, .cover-label) {
-  border-radius: 0; box-shadow: none; backdrop-filter: none; background: none;
-  border: 6px solid transparent; border-image: var(--px-paper) 3 fill / 6px stretch;
-  filter: drop-shadow(3px 3px 0 rgba(52, 64, 94, .3));
-}
-.app.pixel :where(.cell, .slot, .stamp-pad) { border-image-source: var(--px-white); filter: drop-shadow(2px 2px 0 rgba(60, 40, 20, .18)); }
-.app.pixel .toast, .app.pixel .btn { border-image-source: var(--px-ink); }
-.app.pixel .btn.ghost-btn { border-image-source: var(--px-paper); }
-.app.pixel .primary { border-image-source: var(--px-red); filter: drop-shadow(0 3px 0 #34405e); }
-.app.pixel .primary.xmas { border-image-source: var(--px-green); }
-.app.pixel .primary:disabled { border-image-source: var(--px-gray); }
-.app.pixel .pm-list button.hot { border-width: 4px; border-image-width: 4px; filter: none; padding: 0 1px; }
-.app.pixel .cover-label { border-image-source: var(--px-white); filter: none; }
-.app.pixel .hint { animation: bobPx 2.4s steps(2) infinite; }
-@keyframes bobPx { 50% { transform: translate(-50%, -3px); } }
-/* 누르면 그림자 쪽으로 쑥 */
-.app.pixel :where(.progress, .journal-btn, .map-fab, .x, .back, .btn, .primary):active:not(:disabled) {
-  transform: translate(2px, 2px); filter: drop-shadow(1px 1px 0 rgba(52, 64, 94, .3));
-}
-.app.pixel .sheet-band { border-radius: 0; }
-.app.pixel .chip { border-radius: 0; box-shadow: inset 0 0 0 2px rgba(255, 255, 255, .5); }
-.app.pixel .journal-btn em { border-radius: 0; box-shadow: 0 0 0 2px var(--ink); }
-.app.pixel .pm-pin, .app.pixel .pm-list .num { border-radius: 0; }
-.app.pixel .pm-pin.done::after { border-radius: 0; }
-.app.pixel .polaroid { box-shadow: 0 0 0 2px #e3d8c6, 4px 4px 0 rgba(60, 40, 20, .18); }
-/* 도트 글꼴은 흐림 없이 */
-.app.pixel { word-break: keep-all; -webkit-font-smoothing: none; -moz-osx-font-smoothing: unset; font-smooth: never; }
-.app.pixel .pages { border-radius: 0; border: 6px solid transparent; border-image: var(--px-paper) 3 fill / 6px stretch; box-shadow: 6px 6px 0 rgba(20, 25, 40, .3); }
-.app.pixel .cover { border-radius: 0; box-shadow: 6px 6px 0 rgba(0, 0, 0, .3); }
-.app.pixel .cell .dim-t { font-size: 12px; }

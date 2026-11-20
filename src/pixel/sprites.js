@@ -647,8 +647,8 @@ export function signpostSprite() {
   })
 }
 
-// ── 아바타: 분홍 니트 모자를 쓴 여자아이 (아래·위·왼쪽·오른쪽, 걷기 3프레임 + 손 흔들기) ──
-const AV = { hat: '#E9A2A9', hatD: '#C98089', hatL: '#F5C6CB', hair: '#6B4433', hairD: '#4E3127', skin: '#FFDCC4', skinD: '#F0B89F', coat: '#E58C8F', coatD: '#C46E74', leg: '#4B5566', blush: '#F3A3A3' }
+// ── 아바타: 주홍 니트 모자 + 남색 더플코트 + 겨자색 목도리 여행자 (아래·위·왼쪽·오른쪽, 걷기 3프레임 + 손 흔들기) ──
+const AV = { hat: '#D6553F', hatD: '#A9402F', hatL: '#EC8A72', hair: '#6B4433', hairD: '#4E3127', skin: '#FFDCC4', skinD: '#F0B89F', coat: '#43507A', coatD: '#2F3858', leg: '#5A5150', blush: '#F3A3A3' }
 
 function avatarPaint(dir, frame) {
   return (P) => {
@@ -671,11 +671,11 @@ function avatarPaint(dir, frame) {
       P.px(5, 10, C.ink); P.px(4, 11, AV.blush); P.px(3, 10, AV.skin); P.rect(12, 9, 2, 4, AV.hairD)
     }
     // 목도리
-    P.rect(4, 13, 9, 2, C.snow); P.rect(4, 14, 9, 1, C.snowMid)
-    if (dir !== 'up') P.rect(dir === 'down' ? 10 : 9, 15, 2, 2, C.snow)
+    P.rect(4, 13, 9, 2, C.glow); P.rect(4, 14, 9, 1, C.glowDark)
+    if (dir !== 'up') P.rect(dir === 'down' ? 10 : 9, 15, 2, 2, C.glow)
     // 코트
     P.rect(4, 15, 9, 6, AV.coat); P.rect(11, 15, 2, 6, AV.coatD); P.rect(4, 20, 9, 1, AV.coatD)
-    if (dir === 'down') { P.px(8, 17, C.glowDark); P.px(8, 19, C.glowDark) }
+    if (dir === 'down') { P.px(8, 17, C.snowHi); P.px(8, 19, C.snowHi) }
     // 팔
     if (frame === 3) {
       P.rect(3, 15, 1, 4, AV.coat); P.px(3, 19, C.roofDark)

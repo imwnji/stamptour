@@ -11,7 +11,13 @@ UI 문구·주석은 한국어. 세로 모바일(390×844) 우선.
 
 ## 스택
 React 18 + Vite 5, Canvas2D(도트 렌더), zustand, IndexedDB.
-폰트: Gaegu(손글씨)·Gowun Dodum — `src/fonts.css` (woff2 한글 서브셋).
+폰트: Galmuri11(도트, 화면이 말하는 글: 제목·버튼·안내) + Gaegu(손글씨, 내가 쓴 글: 날짜·한 줄 기록·메모, `.hand`) — `src/fonts.css`.
+
+## 디자인 컨셉: "도트로 그린 겨울 서촌 일기장"
+- 색: 한지(종이) `#F7F2E8` · 먹 `#272A40` · 인주 주홍 `#D14B35` · 등불 `#F4B860` · 솔 `#3B6655` · 겨울하늘 `#AFC3DA` · 남색 표지 `#43507A`. 지도는 `src/pixel/palette.js`, UI 는 `styles.css` 의 `:root` 변수.
+- 지도 바닥 = 일기장 도트 그리드(1칸마다 2x2 점), UI 종이(`.page-paper`)도 같은 점.
+- UI 부품 = 문구류: 마스킹테이프(`.tape .tape-red/blue/amber/pine`, `--tape`로 색), 메모 쪽지(안내), 인덱스 카드(매장), 여권식 STAMP HERE 칸, 폴라로이드, 줄 노트, 스프링 저널·남색 천 표지+주홍 고무줄.
+- 도트 테두리 = `src/pixel-frames.css` (자동 생성, `node scripts/build-pixel-frames.mjs`). 회전·확대되는 요소엔 border-image 이음선이 보이므로 box-shadow 외곽선 사용.
 
 ## 구조 (어디를 고치나)
 - `src/data/stores.js` — 매장 17곳 = 구글맵 공유 목록 "서촌겨울스탬프투어" (lat/lng·주소·cid·`model` 고유 모양·`pixelSide`). 길은 자동 선택, 필요할 때만 `shift`/`flip` 손보정.
@@ -23,7 +29,7 @@ React 18 + Vite 5, Canvas2D(도트 렌더), zustand, IndexedDB.
   - `sprites.js` — 가게 17곳(고유 모양 6종 + 공통), 나무·소품·동물·아바타 전부 코드로. `SHOP_K`=1.5 (stores.js `shopScale` 과 같게)
   - `world.js` — 바닥(눈·판석 돌길·광장·디딤돌·불빛·발자국) + 물체 배치(가로등·길가 소품·숲·동물, 가게 둘레는 비움)
   - `PixelMap.jsx` — 카메라 추적·드래그·핀치/휠 확대, 탭→걷기, 텔레포트, 엽서, 눈송이, 인트로
-- `src/ui/` — Hud(지도 버튼 포함), PaperMap(종이 지도: 번호 핀+목록→`goToStore`), StoreSheet, StampScreen, Journal(저널·일기장·완성 페이지).
+- `src/ui/` — Hud(일기장 머리말: 날짜 라벨·도장 카드·메모 쪽지, 지도 버튼 포함), PaperMap(종이 지도: 번호 핀+목록→`goToStore`), StoreSheet, StampScreen, Journal(저널·일기장·완성 페이지).
 - `src/lib/` — db(IndexedDB, Firebase 전환 시 이 파일만), stampSvg(도장 문양 SVG), photo(사진 압축), shareImage(1080×1920 공유 이미지).
 - `src/store.js` — zustand 전역 상태 (phase, stamps, walkTarget, activeStore, journal, paperMap …).
 

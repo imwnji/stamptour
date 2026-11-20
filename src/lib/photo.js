@@ -44,3 +44,9 @@ export function fmtDate(iso, withDay = true) {
   const day = '일월화수목금토'[d.getDay()]
   return `${d.getMonth() + 1}.${String(d.getDate()).padStart(2, '0')}${withDay ? ` (${day})` : ''}`
 }
+
+// 일기장 머리말 날짜: "11월 21일 토요일"
+export function diaryDate(iso = new Date().toISOString()) {
+  const d = new Date(iso)
+  return `${d.getMonth() + 1}월 ${d.getDate()}일 ${'일월화수목금토'[d.getDay()]}요일`
+}

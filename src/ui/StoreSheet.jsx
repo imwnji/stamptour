@@ -1,9 +1,10 @@
 import { useState } from 'react'
 import { useApp } from '../store.js'
-import { STORE_BY_ID, TYPE_LABEL, mapsUrl } from '../data/stores.js'
+import { STORES, STORE_BY_ID, TYPE_LABEL, mapsUrl } from '../data/stores.js'
 import { stampUrl, SILHOUETTE } from '../lib/stampSvg.js'
 import { fmtDate } from '../lib/photo.js'
 
+// 매장 정보 = 일기장에 끼워 둔 인덱스 카드 (가게 색 마스킹테이프 + 여권식 도장 칸)
 export default function StoreSheet() {
   const id = useApp((s) => s.activeStore)
   const rec = useApp((s) => s.stamps[id])
@@ -12,6 +13,7 @@ export default function StoreSheet() {
   const openStamp = useApp((s) => s.openStamp)
   const [closing, setClosing] = useState(false)
   const store = STORE_BY_ID[id]
+  const no = String(STORES.indexOf(store) + 1).padStart(2, '0')
 
   const close = () => {
     setClosing(true)
@@ -26,13 +28,15 @@ export default function StoreSheet() {
 
   return (
     <div className={'dim' + (closing ? ' out' : '')} onClick={close}>
-      <div className={'sheet paper' + (closing ? ' out' : '')} onClick={(e) => e.stopPropagation()} role="dialog" aria-label={store.name}>
-        <div className="sheet-band" style={{ background: store.color }}>
-          <span className="chip">{store.category || TYPE_LABEL[store.type]}</span>
-          <span className="band-en">{store.nameEn}</span>
-        </div>
+      <div className={'sheet' + (closing ? ' out' : '')} onClick={(e) => e.stopPropagation()} role="dialog" aria-label={store.name}>
+        <span className="tape sheet-tape" style={{ '--tape': store.color }} />
         <button className="x" onClick={close} aria-label="닫기">✕</button>
-        <h2 className="hand">{store.name}</h2>
+        <div className="sheet-top">
+          <span className="no">No.{no}</span>
+          <span className="chip" style={{ color: store.color }}>{store.category || TYPE_LABEL[store.type]}</span>
+        </div>
+        <h2>{store.name}</h2>
+        <p className="name-en">{store.nameEn}</p>
         <p className="intro">{store.intro}</p>
         <dl className="meta">
           <div><dt>주소</dt><dd>{store.address}</dd></div>
@@ -43,21 +47,22 @@ export default function StoreSheet() {
         </dl>
 
         <div className="slot-wrap">
-          <span className="tape t1" />
           {rec ? (
             <button className={'slot stamped' + (fresh ? ' fresh' : '')} onClick={openPage}>
+              <span className="slot-label">VISITED</span>
               <img src={stampUrl(store)} alt={`${store.name} 도장`} />
-              <span className="hand date">{fmtDate(rec.date)} 방문</span>
+              <span className="hand date">{fmtDate(rec.date)} 다녀옴</span>
             </button>
           ) : (
             <button className="slot empty" onClick={openStamp}>
+              <span className="slot-label">STAMP HERE</span>
               <span className="sil" style={{ color: store.color }} dangerouslySetInnerHTML={{ __html: SILHOUETTE[store.type] }} />
-              <span className="hand cta">여기를 눌러 도장 찍기</span>
+              <span className="cta">눌러서 도장 찍기</span>
             </button>
           )}
         </div>
         <p className="foot hand">
-          {rec ? (fresh ? '시트를 닫으면 가게 벽에 엽서가 붙어요 ✦' : '도장을 누르면 그날의 기록을 볼 수 있어요') : '사진 한 장 + 한 줄 기록으로 방문 인증해요'}
+          {rec ? (fresh ? '카드를 닫으면 가게 벽에 엽서가 붙어요' : '도장을 누르면 그날의 기록이 펼쳐져요') : '사진 한 장 + 한 줄 기록 = 오늘의 도장'}
         </p>
       </div>
     </div>

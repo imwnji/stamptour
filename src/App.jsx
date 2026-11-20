@@ -44,7 +44,8 @@ export default function App() {
       <div className="osm-credit">지도 데이터 © OpenStreetMap contributors</div>
       {phase === 'intro' && ready && (
         <div className="intro-title">
-          <p className="hand small">SEOCHON WINTER JOURNAL</p>
+          <span className="tape tape-red" />
+          <p className="small">SEOCHON WINTER JOURNAL</p>
           <h1 className="hand">겨울의 서촌을 기록해요</h1>
         </div>
       )}
@@ -54,8 +55,14 @@ export default function App() {
       {journal && <Journal />}
       {toast && <div className="toast" key={toast.t}>{toast.msg}</div>}
       <div className={'loading' + (ready ? ' gone' : '')}>
-        <div className="flake">❄</div>
-        <p className="hand">서촌에 눈이 내리는 중…</p>
+        <div className="loading-book">
+          <span className="cover-band" />
+          <div className="cover-label">
+            <small>2026 — 2027 WINTER</small>
+            <h1>SEOCHON<br />WINTER<br />JOURNAL</h1>
+          </div>
+        </div>
+        <p className="hand">서촌에 눈이 내리는 중<span className="flake">❄</span></p>
       </div>
     </div>
   )
