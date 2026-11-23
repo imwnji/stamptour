@@ -26,7 +26,8 @@ React 18 + Vite 5, Canvas2D(도트 렌더), zustand, IndexedDB.
 - `src/data/map.js` — layout 결과(NODES/EDGES/STREETS/BG_STREETS, MAP_W·MAP_H 자동) + 다익스트라 `findPath`, `distToStreets`. 출발 노드 `S`, 북쪽 끝 `PLAZA`.
 - `src/pixel/` — 도트 마을 (Canvas2D, 정수 배율, 1칸=16px).
   - `palette.js`(겨울 팔레트 8색) · `colors.js`(명암 단계) · `draw.js`(도트 도구, 자동 외곽선, `withScale` 다시 그리기 배율)
-  - `sprites.js` — 가게 17곳(고유 모양 6종 + 공통), 나무·소품·동물·아바타 전부 코드로. `SHOP_K`=1.5 (stores.js `shopScale` 과 같게)
+  - `shopIcons.js` — 가게 아이콘 = "파는 물건 모양의 집". 그림 파일 `src/assets/shops/<이름>.png|webp` 는 **손대지 않고 그대로** 씀: 64px 이하 도트는 정수 2배, 큰 원본(webp 등)은 투명 테두리만 잘라 원본 11.25px = 지도 1px 로 부드럽게 축소(미리 줄인 단계 mips). 코드 그림 6종(moka-pot 등)은 예비. 가게에 붙이려면 stores.js 에 `icon: '<이름>'`.
+  - `sprites.js` — 나무·소품·동물·아바타 전부 코드로. 예전 가게 그림(고유 모양 6종 + 공통)은 아이콘이 없을 때만 쓰는 예비. `SHOP_K`=1.5 (stores.js `shopScale` 과 같게)
   - `world.js` — 바닥(눈·판석 돌길·광장·디딤돌·불빛·발자국) + 물체 배치(가로등·길가 소품·숲·동물, 가게 둘레는 비움)
   - `PixelMap.jsx` — 카메라 추적·드래그·핀치/휠 확대, 탭→걷기, 텔레포트, 엽서, 눈송이, 인트로
 - `src/ui/` — Hud(일기장 머리말: 날짜 라벨·도장 카드·메모 쪽지, 지도 버튼 포함), PaperMap(종이 지도: 번호 핀+목록→`goToStore`), StoreSheet, StampScreen, Journal(저널·일기장·완성 페이지).

@@ -23,6 +23,8 @@ function placeObjects(walkC) {
   const buildings = STORES.map((s) => {
     const spr = S.shopSprite(s)
     const o = { kind: 'shop', store: s, spr, x: X(s.building[0]), y: Y(s.building[1] + BASE_DZ) }
+    // 엽서 붙는 자리: 아이콘 가게는 몸통 오른쪽 아래
+    if (spr.icon) o.postcard = [Math.round(spr.w * 0.3), -Math.round(spr.h * 0.28)]
     objs.push(o)
     return o
   })

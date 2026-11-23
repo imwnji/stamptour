@@ -8,6 +8,7 @@ import { STORE_BY_ID } from '../data/stores.js'
 import { NODES, START_NODE, findPath } from '../data/map.js'
 import { C } from './colors.js'
 import { buildWorld, T, GW, GH, X, Y, POSTCARD_AT } from './world.js'
+import { loadShopIcons } from './shopIcons.js'
 
 const VIEW_TILES = 15 // 기본 배율에서 화면 가로에 보이는 칸 수
 const WALK = 8 // 칸/초
@@ -196,6 +197,17 @@ export default function PixelMap({ onReady }) {
       const drawSpr = (spr, x, y, lift = 0) => {
         const dx = (x - spr.ax - ox) * s, dy = (y - spr.ay - oy - lift) * s
         if (dx > cv.width || dy > cv.height || dx + spr.w * s < 0 || dy + spr.h * s < 0) return
+        if (spr.mips) {
+          // 원본 그대로 쓰는 큰 그림: 화면 크기 이상인 가장 작은 단계를 부드럽게 줄여 그림
+          const tw = spr.w * s
+          let m = spr.mips[0]
+          for (const k of spr.mips) if (k.width >= tw) m = k
+          ctx.imageSmoothingEnabled = true
+          ctx.imageSmoothingQuality = 'high'
+          ctx.drawImage(m, dx, dy, tw, spr.h * s)
+          ctx.imageSmoothingEnabled = false
+          return
+        }
         ctx.drawImage(spr.cv, dx, dy, spr.w * s, spr.h * s)
       }
       const drawAvatar = () => {
@@ -217,7 +229,7 @@ export default function PixelMap({ onReady }) {
         }
         drawSpr(o.spr, o.x, o.y, lift)
         if (o.kind === 'shop' && stamps[o.store.id]) {
-          const [px, py] = POSTCARD_AT[o.store.model] || POSTCARD_AT.default
+          const [px, py] = o.postcard || POSTCARD_AT[o.store.model] || POSTCARD_AT.default
           drawSpr(world.postcards[o.store.id], o.x + px, o.y + py, lift)
           const sp = sparkles[o.store.id]
           if (sp && now - sp < 1600) {
@@ -249,7 +261,8 @@ export default function PixelMap({ onReady }) {
     raf = requestAnimationFrame(frame)
 
     // 월드 만들기 (무거워서 로딩 화면이 먼저 그려지게 한 박자 뒤에)
-    const tm = setTimeout(() => {
+    const tm = setTimeout(async () => {
+      await loadShopIcons() // 가게 아이콘 그림을 먼저 불러옴
       if (!alive) return
       world = buildWorld()
       onReady?.()

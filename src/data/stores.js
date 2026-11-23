@@ -8,6 +8,7 @@
 //  - (선택) hours: 운영시간 (없으면 HOURS)
 //  - category: 구글맵 업종 표기, type: 'cafe' | 'gift' | 'food' → 건물 소품 + 빈 칸 실루엣
 //  - awning / awningStyle: 차양 색과 모양 ('stripe' 줄무늬 | 'solid' 단색)
+//  - (선택) icon: 물건 모양 집 아이콘 이름 (pixel/shopIcons.js — assets/shops/*.png 또는 코드 그림). 있으면 model 대신 씀
 //  - model: 가게 고유 모양 (pixel/sprites.js: bag·hanok·sweater·cat·alpaca·glass), 없으면 공통 가게
 //  - stamp: 매장별 도장 문양 (shape + motif, lib/stampSvg.js)
 //  - 건물 좌표(building), 아바타가 서는 자리(front), 회전(rot)은 layout.js 에서 자동 계산
@@ -19,6 +20,7 @@ const HOURS = '[공란]'
 export const STORES = [
   {
     id: 'papier',
+    icon: 'planner-notebook-house', // 펼친 스프링 플래너 집
     name: '파피어프로스트',
     nameEn: 'PAPIER PROST',
     sign: 'papier prost',
@@ -33,6 +35,7 @@ export const STORES = [
   },
   {
     id: 'scope',
+    icon: 'scone-house', // 쌓인 스콘 집
     name: '스코프 서촌점',
     nameEn: 'SCOPE SEOCHON',
     sign: '스코프',
@@ -62,6 +65,7 @@ export const STORES = [
   },
   {
     id: 'felt',
+    icon: 'dripper-house', // 드리퍼·서버 집
     name: '펠트커피 서촌점',
     nameEn: 'FELT COFFEE',
     sign: '펠트커피',
@@ -76,6 +80,7 @@ export const STORES = [
   },
   {
     id: 'andeok',
+    icon: 'dumpling-bowl', // 만두 그릇 집
     name: '안덕',
     nameEn: 'ANDEOK',
     sign: '안덕',
@@ -90,6 +95,7 @@ export const STORES = [
   },
   {
     id: 'yeonggwang',
+    icon: 'chicken-bag-house', // 통닭 봉투 집
     name: '영광통닭',
     nameEn: 'YEONGGWANG CHICKEN',
     sign: '영광통닭',
@@ -104,6 +110,7 @@ export const STORES = [
   },
   {
     id: 'lapre',
+    icon: 'strawberry-cake-house', // 딸기 케이크 조각 집
     name: '라프레플루트 서촌',
     nameEn: 'LAPREFLUTE SEOCHON',
     sign: '라프레플루트',
@@ -118,6 +125,7 @@ export const STORES = [
   },
   {
     id: 'pungryu',
+    icon: 'folding-screen-teapot', // 병풍 앞 무쇠 주전자 집
     name: '풍류',
     nameEn: 'PUNGRYU',
     sign: '풍류',
@@ -132,6 +140,7 @@ export const STORES = [
   },
   {
     id: 'khakimoon',
+    icon: 'two-tone-cup', // 흑백 테이크아웃 컵 집
     name: 'KHAKIMOON NUHA',
     nameEn: 'KHAKIMOON NUHA',
     sign: 'KHAKIMOON',
@@ -146,6 +155,7 @@ export const STORES = [
   },
   {
     id: 'masamadre',
+    icon: 'bread-house', // 빵·바게트 집
     name: '마사마드레',
     nameEn: 'MASA MADRE',
     sign: '마사마드레',
@@ -160,6 +170,7 @@ export const STORES = [
   },
   {
     id: 'ecore',
+    icon: 'curry-jar-house', // 카레 접시 얹은 병 집
     name: '에코레 카페앤 그로서리',
     nameEn: 'ECORE CAFE & GROCERY',
     sign: '에코레',
@@ -174,6 +185,7 @@ export const STORES = [
   },
   {
     id: 'byeoksu',
+    icon: 'record-shop-house', // 턴테이블·색연필 얹은 벽돌집
     name: '스물트론스텔레',
     nameEn: 'SMULTRONSTÄLLE',
     sign: '스물트론스텔레',
@@ -188,6 +200,7 @@ export const STORES = [
   },
   {
     id: 'allight',
+    icon: 'cat-face-house', // 고양이 얼굴 지붕 가게
     pixelSide: 'E', // 길 동쪽
     model: 'cat',
     name: '올라이트 서촌점',
@@ -204,6 +217,7 @@ export const STORES = [
   },
   {
     id: 'favor',
+    icon: 'llama-house', // 담요 두른 라마 집
     model: 'alpaca',
     name: '서촌 파보르 FAVOR',
     nameEn: 'FAVOR SEOCHON',
@@ -219,6 +233,7 @@ export const STORES = [
   },
   {
     id: 'vintage',
+    icon: 'denim-jacket-house', // 옷걸이에 걸린 청재킷 집
     pixelSide: 'W', // 길 서쪽
     model: 'sweater',
     name: 'VINTAGE UNIVERSE',
@@ -235,6 +250,7 @@ export const STORES = [
   },
   {
     id: 'dotle',
+    icon: 'hanok-cafe-house', // 눈 덮인 기와지붕 한옥 카페
     model: 'hanok',
     name: '도틀',
     nameEn: 'DOTLE',
@@ -250,6 +266,7 @@ export const STORES = [
   },
   {
     id: 'onemore',
+    icon: 'tote-bag-house', // 강아지 그림 에코백 집
     model: 'bag',
     name: '원모어백',
     nameEn: 'ONE MORE BAG',

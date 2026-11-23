@@ -2,6 +2,7 @@
 //  1칸(월드 1) = 16px. 빛은 왼쪽 위에서. 외곽선은 draw.js autoOutline 이 자동으로.
 import { C, shade } from './colors.js'
 import { sprite, mirror, withScale } from './draw.js'
+import { shopIcon } from './shopIcons.js'
 
 export const SHOP_K = 1.5 // 가게 크기 배율 (stores.js layoutStores 의 shopScale 과 같게)
 
@@ -405,6 +406,8 @@ function glassCafe() {
 
 const SPECIAL = { bag: bagShop, hanok: hanokShop, sweater: sweaterShop, cat: catShop, alpaca: alpacaShop, glass: glassCafe }
 export function shopSprite(store) {
+  const icon = shopIcon(store.icon) // 물건 모양 집 아이콘 (stores.js icon, pixel/shopIcons.js)
+  if (icon) return icon
   return withScale(SHOP_K, () => (SPECIAL[store.model] || (() => genericShop(store)))())
 }
 
