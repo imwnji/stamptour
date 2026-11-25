@@ -227,6 +227,8 @@ button { font: inherit; color: inherit; border: 0; background: none; cursor: poi
 .meta dt { flex: none; padding: 0 4px; height: 16px; line-height: 16px; background: var(--ink); color: var(--paper); font-weight: 700; }
 .meta dd { margin: 0; line-height: 16px; }
 .meta a { color: var(--red); text-decoration: underline; text-underline-offset: 3px; }
+.meta dd.links { display: flex; flex-wrap: wrap; gap: 4px 12px; }
+.meta dd.hours { display: flex; flex-direction: column; gap: 2px; }
 
 /* 여권식 도장 칸 */
 .slot-wrap { position: relative; margin: 0 auto; width: 188px; }

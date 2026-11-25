@@ -1,5 +1,5 @@
 // 종이 지도 — 매장 위치를 한눈에 보고, 누르면 그 가게 앞으로 바로 이동
-//  왼쪽: 도트로 그린 작은 지도(길·숲·광장) + 번호 핀, 오른쪽: 같은 번호의 목록 (북쪽 → 남쪽 순)
+//  왼쪽: 도트로 그린 작은 지도(길·숲·광장) + 번호 핀, 오른쪽: 같은 번호의 목록 (걷는 코스 순서 = 매장 번호)
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { useApp } from '../store.js'
 import { STORES, TYPE_LABEL } from '../data/stores.js'
@@ -7,7 +7,7 @@ import { STREETS, BG_STREETS, BG_HALF, PLAZA, NODES, START_NODE, distToStreets }
 import { C } from '../pixel/colors.js'
 import { rng } from '../pixel/draw.js'
 
-const LIST = [...STORES].sort((a, b) => a.building[1] - b.building[1])
+const LIST = STORES // 걷는 코스 순서 (= 매장 번호, stores.js 배열 순서)
 
 // 지도에 그릴 범위 (걷는 길 + 가게 + 여백)
 const BOUNDS = (() => {

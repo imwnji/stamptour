@@ -99,14 +99,46 @@ function tidyStreets(list) {
   return arr.map((a) => a.s)
 }
 
+// 골목 곧게 펴기: 큰길(main)은 그대로, 골목은 교차로~교차로(또는 막다른 끝)를 직선으로
+//  - 꼭짓점을 줄이는 Douglas-Peucker: 직선에서 tol 칸 넘게 벗어나는 큰 꺾임만 남김 → 거의 다 한 줄 직선
+//  - 같은 교차로로 되돌아오는 고리 골목은 가장 먼 점에서 나눠서 각각 직선으로
+//  - 양 끝(교차로)은 그대로라 길끼리 연결은 바뀌지 않음
+const STRAIGHT_TOL = 4 // 칸 (= 20m)
+function simplify(P, tol) {
+  if (P.length < 3) return P.map((_, i) => i)
+  const a = P[0], b = P[P.length - 1]
+  const dx = b[0] - a[0], dz = b[1] - a[1]
+  const L = Math.hypot(dx, dz)
+  let md = -1, mi = 0
+  for (let i = 1; i < P.length - 1; i++) {
+    const p = P[i]
+    const d = L < 1e-6 ? Math.hypot(p[0] - a[0], p[1] - a[1]) : Math.abs(dx * (a[1] - p[1]) - dz * (a[0] - p[0])) / L
+    if (d > md) { md = d; mi = i }
+  }
+  if (md <= tol && L >= 1e-6) return [0, P.length - 1]
+  const left = simplify(P.slice(0, mi + 1), tol)
+  const right = simplify(P.slice(mi), tol).map((i) => i + mi)
+  return [...left.slice(0, -1), ...right]
+}
+function straightenAlleys(list, tol = STRAIGHT_TOL) {
+  return list.map((s) => {
+    if (s.main) return s
+    const keep = simplify(s.pts.map(project), tol)
+    return { ...s, pts: keep.map((i) => s.pts[i]) }
+  })
+}
+
 // faceSouth: 위에서 내려다본 2D 라 모든 가게 정면이 남쪽(화면 아래)을 보게
 // tidy: 길 정리 (tidyStreets)
+// straight: 골목을 직선으로 (straightenAlleys)
+// realPos: 가게를 실제 위치(위경도)에 — 문(바닥선)이 실제 좌표에 오도록, 겹치는 만큼만 비켜 섬 (placeAtReal)
 // shopScale: 가게를 크게 그릴 때 간격·길에서 떨어진 거리·문 앞 자리를 같은 배율로
-export function layoutStores(stores, { faceSouth = false, tidy = false, shopScale = 1 } = {}) {
+export function layoutStores(stores, { faceSouth = false, tidy = false, straight = false, realPos = false, shopScale = 1 } = {}) {
   const maxTurn = faceSouth ? 0 : MAX_TURN
   const kS = shopScale
   const SETBACK_ = SETBACK * kS, GAP_ = GAP * kS, CLEAR_ = CLEAR * kS, FRONT_ = FRONT_DIST * kS
-  const SRC = tidy ? tidyStreets(STREETS) : STREETS
+  let SRC = tidy ? tidyStreets(STREETS) : STREETS
+  if (straight) SRC = straightenAlleys(SRC)
   // 1) 길 투영 (꼭짓점은 위경도가 같으면 같은 노드)
   const streets = SRC.map((s, i) => {
     const poly = polyInfo(s.pts.map(project))
@@ -128,6 +160,8 @@ export function layoutStores(stores, { faceSouth = false, tidy = false, shopScal
     return best
   }
 
+  if (realPos) placeAtReal()
+  else {
   // 2) 매장 → 가장 가까운 길 (+ 손보정 shift/flip)
   stores.forEach((s) => {
     const P = project([s.lat, s.lng])
@@ -197,6 +231,88 @@ export function layoutStores(stores, { faceSouth = false, tidy = false, shopScal
     s.attach = found.pos
     st.items.push({ t: found.t, id: 'a_' + s.id, pos: found.pos })
   })
+
+  }
+
+  // ── 실제 위치에 세우기 ──
+  //  목표: 가게 문(바닥선 가운데)이 실제 위경도 지점에 오도록.
+  //  조건: ① 가게 그림이 걷는 길을 덮지 않음 ② 다른 가게 그림과 겹치지 않음
+  //        ③ 문 앞 → 가장 가까운 길까지 디딤돌이 가게(자기·남의) 그림을 지나가지 않음
+  //  조건을 지키는 자리 중 실제 지점에 가장 가까운 곳 (+ 디딤돌이 짧을수록 조금 가산점).
+  //  한 번 다 세운 뒤, 나머지를 고정하고 하나씩 다시 자리 잡기를 몇 번 반복해 전체 어긋남을 줄임.
+  function placeAtReal() {
+    const DOOR = 1.25 * kS // 건물 중심 → 문(바닥선)  (pixel/world.js BASE_DZ 와 같게)
+    const HW = 3.3, UP = 4.6 // 그림 반폭 · 중심에서 위로 (칸, 지도 위 그림 크기 ≈ 6.5칸)
+    const SEP_X = HW * 2 + 0.3, SEP_Z = UP + DOOR + 0.3 // 가게끼리 최소 간격 (가로 또는 세로)
+    const R = 16, STEP = 0.5 // 실제 지점에서 최대 16칸(80m)까지 찾아봄
+    const edgeDist = (p) => segDist(p, null) // 길 가장자리까지 (음수 = 길 위)
+    const nearestStreet = (p) => {
+      let best = null
+      for (const st of streets) {
+        const c = closest(st.poly, p)
+        if (!best || c.d - st.half < best.d) best = { d: c.d - st.half, st, c }
+      }
+      return best
+    }
+    const inBox = (p, b, pad = 0) => Math.abs(p[0] - b[0]) < HW + pad && p[1] > b[1] - UP - pad && p[1] < b[1] + DOOR + pad
+    const fits = (b, others) => {
+      // ① 그림 자리(가로 3점 × 세로 3점)가 길에서 떨어져 있어야
+      for (const dx of [-HW + 0.4, 0, HW - 0.4]) for (const dz of [-UP + 0.4, -1, DOOR]) if (edgeDist([b[0] + dx, b[1] + dz]) < 0.15) return null
+      // ② 다른 가게와 가로 또는 세로로 충분히 떨어짐
+      for (const o of others) if (Math.abs(o[0] - b[0]) < SEP_X && Math.abs(o[1] - b[1]) < SEP_Z) return null
+      // ③ 문 앞 → 가장 가까운 길: 디딤돌이 그림을 지나가지 않게
+      const front = [b[0], b[1] + FRONT_]
+      const ns = nearestStreet(front)
+      const a = ns.c.pos
+      const L = Math.hypot(a[0] - front[0], a[1] - front[1])
+      for (let d = 0.6; d < L; d += 0.5) {
+        const q = [front[0] + ((a[0] - front[0]) * d) / L, front[1] + ((a[1] - front[1]) * d) / L]
+        if (inBox(q, b, -0.2)) return null
+        for (const o of others) if (inBox(q, o, 0.2)) return null
+      }
+      return { st: ns.st, t: ns.c.t, pos: a, len: L }
+    }
+    const target = (s) => { const P = project([s.lat, s.lng]); return [P[0], P[1] - DOOR] }
+    const best = (s, others) => {
+      const T = target(s)
+      let win = null
+      for (let i = -R; i <= R; i += STEP) for (let j = -R; j <= R; j += STEP) {
+        const off = Math.hypot(i, j)
+        if (off > R || (win && off >= win.score)) continue
+        const b = [T[0] + i, T[1] + j]
+        const f = fits(b, others)
+        if (!f) continue
+        const score = off + 0.15 * f.len
+        if (!win || score < win.score) win = { b, ...f, score }
+      }
+      return win
+    }
+    const pos = {}
+    // 가까이 몰린 가게부터 (주변 3곳까지 평균 거리가 짧은 순)
+    const crowd = (s) => {
+      const T = target(s)
+      const ds = stores.filter((o) => o !== s).map((o) => Math.hypot(...target(o).map((v, k) => v - T[k]))).sort((a, b) => a - b)
+      return ds[0] + ds[1] + ds[2]
+    }
+    const order = [...stores].sort((a, b) => crowd(a) - crowd(b))
+    for (let pass = 0; pass < 4; pass++) {
+      for (const s of order) {
+        const others = stores.filter((o) => o !== s && pos[o.id]).map((o) => pos[o.id].b)
+        const w = best(s, others)
+        if (w) pos[s.id] = w
+        else if (!pos[s.id]) console.warn('[layout] 실제 위치 근처에 자리를 못 찾음:', s.id)
+      }
+    }
+    stores.forEach((s) => {
+      const w = pos[s.id]
+      s.building = w.b
+      s.rot = 0
+      s.front = [w.b[0], w.b[1] + FRONT_]
+      s.side = s.id.length % 2 ? 'L' : 'R' // 소품 좌우 배치용
+      s.attach = w.pos
+      w.st.items.push({ t: w.t, id: 'a_' + s.id, pos: w.pos })
+    })
+  }
 
   // 출발점: 가장 가까운 길 위 지점(a_start) ↔ 출발 위치(S)
   const S = project(START_LL)

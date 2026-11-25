@@ -22,7 +22,7 @@ React 18 + Vite 5, Canvas2D(도트 렌더), zustand, IndexedDB.
 ## 구조 (어디를 고치나)
 - `src/data/stores.js` — 매장 17곳 = 구글맵 공유 목록 "서촌겨울스탬프투어" (lat/lng·주소·cid·`model` 고유 모양·`pixelSide`). 길은 자동 선택, 필요할 때만 `shift`/`flip` 손보정.
 - `src/data/streets.js` — **자동 생성** (`scripts/build-streets.mjs`, OpenStreetMap 도로). STREETS = 출발점→각 매장 실제 경로(걷는 길), BG_STREETS = 나머지 골목(그림만). `START_LL` = 출발점(8Q98HXG9+HJH). 매장·출발점 바꾸면 스크립트 상단 주석대로 다시 생성.
-- `src/data/layout.js` — 위경도→칸 균일 변환(1칸=5m), 길 정리(`tidyStreets`: 짧은 막다른 가지·나란히 붙은 막다른 길 제거), 매장을 가까운 길 옆 빈자리에 배치(정면은 모두 남쪽, `shopScale` 1.5), 길 그래프 생성.
+- `src/data/layout.js` — 위경도→칸 균일 변환(1칸=5m), 길 정리(`tidyStreets`: 짧은 막다른 가지·나란히 붙은 막다른 길 제거), 골목 직선화(`straight`), 매장은 실제 위경도에 문이 오도록 배치(`realPos`: 그림·길과 안 겹치는 가장 가까운 자리, 정면은 모두 남쪽, `shopScale` 1.5), 길 그래프 생성.
 - `src/data/map.js` — layout 결과(NODES/EDGES/STREETS/BG_STREETS, MAP_W·MAP_H 자동) + 다익스트라 `findPath`, `distToStreets`. 출발 노드 `S`, 북쪽 끝 `PLAZA`.
 - `src/pixel/` — 도트 마을 (Canvas2D, 정수 배율, 1칸=16px).
   - `palette.js`(겨울 팔레트 8색) · `colors.js`(명암 단계) · `draw.js`(도트 도구, 자동 외곽선, `withScale` 다시 그리기 배율)
