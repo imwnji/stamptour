@@ -15,6 +15,7 @@ export const useApp = create((set, get) => ({
 
   // UI
   activeStore: null, // 정보 시트가 열린 매장
+  peek: false, // 꾹 눌러서 멀리서 본 정보 카드 (도착 전이라 도장은 못 찍음)
   stampOpen: false, // 스탬프 인증 화면
   journal: null, // null | 'open'
   journalPage: null, // storeId (기록 보기)
@@ -40,27 +41,44 @@ export const useApp = create((set, get) => ({
 
   setPhase: (phase) => set({ phase }),
 
+  markHintSeen() {
+    if (get().hintSeen) return
+    try { sessionStorage.setItem('hintSeen', '1') } catch {}
+    set({ hintSeen: true })
+  },
   tapStore(storeId) {
     const s = get()
     if (s.walkTarget || s.phase !== 'map' || s.activeStore) return
-    if (!s.hintSeen) {
-      try { sessionStorage.setItem('hintSeen', '1') } catch {}
-      set({ hintSeen: true })
-    }
+    s.markHintSeen()
     if (s.avatarNode === 'f_' + storeId) {
-      set({ activeStore: storeId })
+      set({ activeStore: storeId, peek: false })
     } else {
       set({ walkTarget: storeId })
     }
   },
+  // 꾹 누르기: 걸어가지 않고 정보 카드만. 이미 그 가게 앞이면 평소 카드(도장 가능)
+  peekStore(storeId) {
+    const s = get()
+    if (s.walkTarget || s.phase !== 'map' || s.activeStore || s.journal || s.paperMap) return
+    s.markHintSeen()
+    set({ activeStore: storeId, peek: s.avatarNode !== 'f_' + storeId })
+  },
+  // 정보 카드에서 '가서 도장 찍기' → 카드 닫고 그 가게로 걸어감
+  walkFromPeek() {
+    const id = get().activeStore
+    if (!id) return
+    set({ activeStore: null, peek: false, stampOpen: false })
+    get().tapStore(id)
+  },
   arrived(storeId) {
-    set({ walkTarget: null, avatarNode: 'f_' + storeId, activeStore: storeId })
+    set({ walkTarget: null, avatarNode: 'f_' + storeId, activeStore: storeId, peek: false })
   },
 
   closeSheet() {
     const { activeStore, freshStamp } = get()
     set({
       activeStore: null,
+      peek: false,
       stampOpen: false,
       postcard:
         freshStamp && freshStamp === activeStore && get().postcard?.storeId !== activeStore

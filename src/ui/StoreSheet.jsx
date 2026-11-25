@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { useApp } from '../store.js'
 import { STORES, STORE_BY_ID, TYPE_LABEL, mapsUrl, storeLinks } from '../data/stores.js'
 import { stampUrl, SILHOUETTE } from '../lib/stampSvg.js'
@@ -11,12 +11,17 @@ export default function StoreSheet() {
   const fresh = useApp((s) => s.freshStamp === id)
   const closeSheet = useApp((s) => s.closeSheet)
   const openStamp = useApp((s) => s.openStamp)
+  const peek = useApp((s) => s.peek) // 꾹 눌러서 멀리서 본 카드
+  const walkFromPeek = useApp((s) => s.walkFromPeek)
+  const openedAt = useRef(performance.now())
   const [closing, setClosing] = useState(false)
   const store = STORE_BY_ID[id]
   const no = String(STORES.indexOf(store) + 1).padStart(2, '0')
   const links = storeLinks(store)
 
   const close = () => {
+    // 꾹 누르기로 연 직후 손 뗌이 배경 클릭으로 들어와 바로 닫히지 않게
+    if (performance.now() - openedAt.current < 400) return
     setClosing(true)
     setTimeout(closeSheet, 220)
   }
@@ -57,6 +62,12 @@ export default function StoreSheet() {
               <img src={stampUrl(store)} alt={`${store.name} 도장`} />
               <span className="hand date">{fmtDate(rec.date)} 다녀옴</span>
             </button>
+          ) : peek ? (
+            <button className="slot empty" onClick={walkFromPeek}>
+              <span className="slot-label">STAMP HERE</span>
+              <span className="sil" style={{ color: store.color }} dangerouslySetInnerHTML={{ __html: SILHOUETTE[store.type] }} />
+              <span className="cta">가서 도장 찍기 →</span>
+            </button>
           ) : (
             <button className="slot empty" onClick={openStamp}>
               <span className="slot-label">STAMP HERE</span>
@@ -66,7 +77,11 @@ export default function StoreSheet() {
           )}
         </div>
         <p className="foot hand">
-          {rec ? (fresh ? '카드를 닫으면 가게 벽에 엽서가 붙어요' : '도장을 누르면 그날의 기록이 펼쳐져요') : '사진 한 장 + 한 줄 기록 = 오늘의 도장'}
+          {rec
+            ? (fresh ? '카드를 닫으면 가게 벽에 엽서가 붙어요' : '도장을 누르면 그날의 기록이 펼쳐져요')
+            : peek
+              ? '도장은 가게 앞에 도착해야 찍을 수 있어요'
+              : '사진 한 장 + 한 줄 기록 = 오늘의 도장'}
         </p>
       </div>
     </div>

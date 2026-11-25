@@ -44,7 +44,8 @@ button { font: inherit; color: inherit; border: 0; background: none; cursor: poi
 
 .app { position: fixed; inset: 0; overflow: hidden; word-break: keep-all; }
 .scene { position: absolute; inset: 0; touch-action: none; }
-.pixel-canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; touch-action: none; image-rendering: pixelated; }
+.pixel-canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; touch-action: none; image-rendering: pixelated;
+  -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; } /* 꾹 누를 때 브라우저 메뉴·선택 막기 */
 /* 도트 글꼴은 흐림 없이 */
 .app { -webkit-font-smoothing: none; -moz-osx-font-smoothing: unset; font-smooth: never; }
 

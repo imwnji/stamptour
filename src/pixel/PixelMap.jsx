@@ -2,6 +2,7 @@
 //  - 캔버스 하나에 바닥 + y 순서대로 세운 물체 + 아바타 + 눈송이
 //  - 배율은 정수(도트가 번지지 않게), 카메라도 정수 픽셀에 맞춤
 //  - 매장 탭 → 통 튀고 → 실제 길(findPath)로 걸어감 → 매장 시트 (store.js)
+//  - 매장 꾹 누르기(LONG_MS) → 걷지 않고 정보 카드만 (peekStore, 도장은 도착해야)
 import { useEffect, useRef } from 'react'
 import { useApp } from '../store.js'
 import { STORES, STORE_BY_ID, TYPE_LABEL } from '../data/stores.js'
@@ -15,6 +16,7 @@ import { SNOW, VIEW } from './design.js'
 const REDUCED = typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches
 
 const WALK = 8 // 칸/초
+const LONG_MS = 450 // 이만큼 움직이지 않고 누르고 있으면 '꾹 누르기'
 const LEAD = 0.16 // 아바타를 화면 가운데보다 조금 아래에 → 코스가 이어지는 북쪽(위)이 더 보이게
 
 export default function PixelMap({ onReady }) {
@@ -77,11 +79,28 @@ export default function PixelMap({ onReady }) {
       const s = scale()
       return [cam.x + ((ex - r.left) * dpr - cv.width / 2) / s, cam.y + ((ey - r.top) * dpr - cv.height / 2) / s]
     }
+    // 꾹 누르기: 손가락이 닿을 때 타이머를 켜고, 움직이거나·두 손가락이 되거나·일찍 떼면 취소
+    const cancelLong = () => { if (drag?.timer) { clearTimeout(drag.timer); drag.timer = 0 } }
     const onDown = (e) => {
       cv.setPointerCapture?.(e.pointerId)
       pts.set(e.pointerId, [e.clientX, e.clientY])
-      if (pts.size === 1) drag = { x: e.clientX, y: e.clientY, moved: false }
+      if (pts.size === 1) {
+        drag = { x: e.clientX, y: e.clientY, moved: false, timer: 0, long: false }
+        const hit = canAct() && hitShop(...toWorld(e.clientX, e.clientY))
+        if (hit) {
+          const d = drag
+          d.timer = setTimeout(() => {
+            d.timer = 0
+            if (drag !== d || d.moved || !canAct()) return
+            d.long = true
+            hops[hit.store.id] = performance.now() // 통 튀며 '눌렸다' 알림
+            navigator.vibrate?.(15) // 안드로이드만 (iOS 사파리는 무시)
+            useApp.getState().peekStore(hit.store.id)
+          }, LONG_MS)
+        }
+      }
       if (pts.size === 2) {
+        cancelLong()
         const [a, b] = [...pts.values()]
         pinch = { d: Math.hypot(a[0] - b[0], a[1] - b[1]) }
         drag = null
@@ -100,7 +119,7 @@ export default function PixelMap({ onReady }) {
         return
       }
       if (!drag) return
-      if (!drag.moved && Math.hypot(e.clientX - drag.x, e.clientY - drag.y) > 8) drag.moved = true
+      if (!drag.moved && Math.hypot(e.clientX - drag.x, e.clientY - drag.y) > 8) { drag.moved = true; cancelLong() }
       if (drag.moved && useApp.getState().phase === 'map') {
         const s = scale()
         cam.x -= ((e.clientX - prev[0]) * dpr) / s
@@ -111,7 +130,9 @@ export default function PixelMap({ onReady }) {
     const onUp = (e) => {
       pts.delete(e.pointerId)
       if (pts.size < 2) pinch = null
-      if (drag && !drag.moved && pts.size === 0) tap(...toWorld(e.clientX, e.clientY))
+      cancelLong()
+      // 꾹 누르기로 이미 정보를 띄웠으면, 손을 뗄 때 탭(걸어가기)으로 처리하지 않음
+      if (drag && !drag.moved && !drag.long && pts.size === 0) tap(...toWorld(e.clientX, e.clientY))
       if (pts.size === 0) drag = null
     }
     const onWheel = (e) => {
@@ -123,16 +144,29 @@ export default function PixelMap({ onReady }) {
     cv.addEventListener('pointerup', onUp)
     cv.addEventListener('pointercancel', onUp)
     cv.addEventListener('wheel', onWheel, { passive: false })
+    // 꾹 누를 때 뜨는 브라우저 메뉴(이미지 저장·우클릭 메뉴) 막기
+    const onCtx = (e) => e.preventDefault()
+    cv.addEventListener('contextmenu', onCtx)
 
-    const tap = (wx, wy) => {
-      if (!world) return
+    // 지금 가게를 누를 수 있는 상태인지 (걷는 중·카드/저널/종이 지도가 열려 있으면 안 됨)
+    const canAct = () => {
       const st = useApp.getState()
-      if (st.phase !== 'map' || st.walkTarget || st.activeStore || st.journal || st.paperMap) return
+      return !!world && st.phase === 'map' && !st.walkTarget && !st.activeStore && !st.journal && !st.paperMap
+    }
+    // 이 월드 좌표에 있는 가게 (겹치면 앞쪽 = y 가 큰 가게)
+    const hitShop = (wx, wy) => {
+      if (!world) return null
       let hit = null
       for (const o of world.buildings) {
         const x0 = o.x - o.spr.ax, y0 = o.y - o.spr.ay
         if (wx >= x0 && wx < x0 + o.spr.w && wy >= y0 - 6 && wy < o.y + 10 && (!hit || o.y > hit.y)) hit = o
       }
+      return hit
+    }
+    const tap = (wx, wy) => {
+      if (!canAct()) return
+      const st = useApp.getState()
+      const hit = hitShop(wx, wy)
       if (!hit) return
       hops[hit.store.id] = performance.now()
       setTimeout(() => st.tapStore(hit.store.id), 200) // 통 튀는 0.2초 후 출발
@@ -336,6 +370,8 @@ export default function PixelMap({ onReady }) {
       cv.removeEventListener('pointerup', onUp)
       cv.removeEventListener('pointercancel', onUp)
       cv.removeEventListener('wheel', onWheel)
+      cv.removeEventListener('contextmenu', onCtx)
+      cancelLong()
     }
   }, [])
   return (

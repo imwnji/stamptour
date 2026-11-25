@@ -45,7 +45,7 @@ export default function Hud() {
     : count === STORES.length
       ? '도장 다 모았다! 저널을 펼쳐보자'
       : !hintSeen
-        ? '눈 쌓인 가게를 톡! 눌러보세요'
+        ? '가게를 톡! 누르면 걸어가고, 꾹~ 누르면 정보만 봐요'
         : null
   const show = phase === 'map'
 
