@@ -4,17 +4,22 @@
 //  - 매장 탭 → 통 튀고 → 실제 길(findPath)로 걸어감 → 매장 시트 (store.js)
 import { useEffect, useRef } from 'react'
 import { useApp } from '../store.js'
-import { STORE_BY_ID } from '../data/stores.js'
+import { STORES, STORE_BY_ID, TYPE_LABEL } from '../data/stores.js'
 import { NODES, START_NODE, findPath } from '../data/map.js'
 import { C } from './colors.js'
-import { buildWorld, T, GW, GH, X, Y, POSTCARD_AT } from './world.js'
+import { buildWorld, T, GW, GH, X, Y, POSTCARD_AT, CONTENT } from './world.js'
 import { loadShopIcons } from './shopIcons.js'
+import { SNOW, VIEW } from './design.js'
 
-const VIEW_TILES = 15 // 기본 배율에서 화면 가로에 보이는 칸 수
+// 움직임 줄이기 설정이면 내리는 눈 끔
+const REDUCED = typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches
+
 const WALK = 8 // 칸/초
+const LEAD = 0.16 // 아바타를 화면 가운데보다 조금 아래에 → 코스가 이어지는 북쪽(위)이 더 보이게
 
 export default function PixelMap({ onReady }) {
   const ref = useRef()
+  const bubble = useRef()
   useEffect(() => {
     const cv = ref.current
     const ctx = cv.getContext('2d')
@@ -27,7 +32,7 @@ export default function PixelMap({ onReady }) {
       dpr = Math.min(window.devicePixelRatio || 1, 3)
       cv.width = Math.round(r.width * dpr)
       cv.height = Math.round(r.height * dpr)
-      base = Math.max(2, Math.round(cv.width / (T * VIEW_TILES)))
+      base = Math.max(2, Math.round(cv.width / (T * VIEW.tiles))) // 기본 배율 (정수 — 도트가 번지지 않게)
     }
     resize()
     window.addEventListener('resize', resize)
@@ -38,7 +43,7 @@ export default function PixelMap({ onReady }) {
     const cam = { x: av.x, y: av.y - 20, follow: true }
     const hops = {}
     const sparkles = {}
-    const flakes = Array.from({ length: 90 }, () => ({ x: Math.random(), y: Math.random(), v: 0.03 + Math.random() * 0.05, s: Math.random() < 0.25 ? 2 : 1, ph: Math.random() * 6 }))
+    const flakes = Array.from({ length: REDUCED ? 0 : SNOW.flakes }, () => ({ x: Math.random(), y: Math.random(), v: (0.03 + Math.random() * 0.05) * SNOW.flakeSpeed, s: Math.random() < 0.2 ? 2 : 1, ph: Math.random() * 6 }))
 
     const startWalk = (id) => {
       const from = useApp.getState().avatarNode
@@ -173,10 +178,12 @@ export default function PixelMap({ onReady }) {
       if (cam.follow) {
         const k = 1 - Math.exp(-dt * 5)
         cam.x += (av.x - cam.x) * k
-        cam.y += (av.y - 20 - cam.y) * k
+        cam.y += (av.y - Math.round(vh * LEAD) - cam.y) * k
       }
-      cam.x = vw >= GW ? GW / 2 : Math.max(vw / 2, Math.min(GW - vw / 2, cam.x))
-      cam.y = vh >= GH ? GH / 2 : Math.max(vh / 2, Math.min(GH - vh / 2, cam.y))
+      // 길·가게가 있는 범위 밖으로는 멀리 못 가게 (빈 숲으로 길을 잃지 않게)
+      const bw = CONTENT.x1 - CONTENT.x0, bh = CONTENT.y1 - CONTENT.y0
+      cam.x = vw >= bw ? (CONTENT.x0 + CONTENT.x1) / 2 : Math.max(CONTENT.x0 + vw / 2, Math.min(CONTENT.x1 - vw / 2, cam.x))
+      cam.y = vh >= bh ? (CONTENT.y0 + CONTENT.y1) / 2 : Math.max(CONTENT.y0 + vh / 2, Math.min(CONTENT.y1 - vh / 2, cam.y))
       const ox = Math.round(cam.x - vw / 2), oy = Math.round(cam.y - vh / 2)
 
       ctx.imageSmoothingEnabled = false
@@ -219,10 +226,14 @@ export default function PixelMap({ onReady }) {
         drawSpr(avSpr, ax, ay, moving && avFrame ? 1 : 0)
         drewAv = true
       }
+      const showDetail = zoom >= VIEW.detailFrom // 축소하면 작은 장식은 숨기고 가게 중심으로
       for (const o of world.objs) {
         if (o.y < oy - 8 || o.y - o.spr.h > oy + vh + 8 || o.x + o.spr.w < ox || o.x - o.spr.w > ox + vw) continue
+        if (o.detail && !showDetail) continue
         if (!drewAv && o.y > ay) drawAvatar()
         let lift = 0
+        // 토끼: 가끔 한 번 깡충 (움직임 줄이기 설정이면 가만히)
+        if (o.kind === 'bunny' && !REDUCED) { const ph = (t + o.hop) % 7; if (ph < 0.3) lift = Math.round(Math.sin((ph / 0.3) * Math.PI) * 3) }
         if (o.kind === 'shop') {
           const h = hops[o.store.id]
           if (h && now - h < 220) lift = Math.round(Math.sin(((now - h) / 220) * Math.PI) * 4)
@@ -246,6 +257,28 @@ export default function PixelMap({ onReady }) {
       }
       if (!drewAv) drawAvatar()
 
+      // 가게 말풍선: 누른 가게(걸어가는 중) 위에 이름·종류·도장 여부
+      const bt = useApp.getState().walkTarget
+      const bel = bubble.current
+      if (bel) {
+        const o = bt && world.buildings.find((b) => b.store.id === bt)
+        if (o) {
+          if (bel.dataset.id !== bt) {
+            const st = o.store
+            bel.dataset.id = bt
+            bel.querySelector('b').textContent = st.name
+            bel.querySelector('i').textContent = st.category || TYPE_LABEL[st.type]
+            const done = !!stamps[bt]
+            const em = bel.querySelector('em')
+            em.textContent = done ? '도장 완료' : '도장 전'
+            em.className = done ? 'done' : ''
+          }
+          const bx = ((o.x - ox) * s) / dpr, by = ((o.y - o.spr.ay - oy) * s) / dpr
+          bel.style.transform = `translate(${Math.round(bx)}px, ${Math.round(by - 6)}px) translate(-50%, -100%)`
+          bel.hidden = false
+        } else if (!bel.hidden) { bel.hidden = true; bel.dataset.id = '' }
+      }
+
       // 내리는 눈 (화면 기준, 한 도트 크기)
       ctx.fillStyle = C.snowHi
       for (const f of flakes) {
@@ -253,7 +286,7 @@ export default function PixelMap({ onReady }) {
         f.x += Math.sin(t * 0.8 + f.ph) * 0.004 * dt * 10
         if (f.y > 1) { f.y -= 1; f.x = Math.random() }
         const qx = Math.round((f.x * cv.width) / s) * s, qy = Math.round((f.y * cv.height) / s) * s
-        ctx.globalAlpha = 0.9
+        ctx.globalAlpha = 0.75
         ctx.fillRect(qx, qy, f.s * s, f.s * s)
       }
       ctx.globalAlpha = 1
@@ -265,6 +298,25 @@ export default function PixelMap({ onReady }) {
       await loadShopIcons() // 가게 아이콘 그림을 먼저 불러옴
       if (!alive) return
       world = buildWorld()
+      // 첫 화면: 출발점 + 가까운 가게 몇 곳(VIEW.firstShops)이 함께 보이도록 배율·위치를 맞춤 (안 되면 개수를 줄임)
+      if (useApp.getState().avatarNode === START_NODE) {
+        const S0 = NODES[START_NODE]
+        const topUI = 70 * dpr, botUI = 70 * dpr // 머리말·안내 쪽지 자리
+        for (let n = VIEW.firstShops; n >= 1; n--) {
+          const pts = [[X(S0[0]), Y(S0[1])], ...STORES.slice(0, n).flatMap((st) => { const o = world.buildings.find((b) => b.store === st); return [[o.x - o.spr.w / 2, o.y - o.spr.ay], [o.x + o.spr.w / 2, o.y]] })]
+          const x0 = Math.min(...pts.map((p) => p[0])) - T, x1 = Math.max(...pts.map((p) => p[0])) + T
+          const y0 = Math.min(...pts.map((p) => p[1])) - T, y1 = Math.max(...pts.map((p) => p[1])) + T
+          let fit = 0
+          for (let sc = Math.min(14, base + 1); sc >= 2; sc--) if ((x1 - x0) * sc <= cv.width && (y1 - y0) * sc <= cv.height - topUI - botUI) { fit = sc; break }
+          if (fit) {
+            zoom = Math.min(0, fit - base)
+            cam.follow = false
+            cam.x = (x0 + x1) / 2
+            cam.y = (y0 + y1) / 2 - (topUI - botUI) / 2 / scale()
+            break
+          }
+        }
+      }
       onReady?.()
       // 첫 진입: 손 흔들기 → 지도
       av.waveUntil = performance.now() + 1500
@@ -286,5 +338,12 @@ export default function PixelMap({ onReady }) {
       cv.removeEventListener('wheel', onWheel)
     }
   }, [])
-  return <canvas ref={ref} className="pixel-canvas" aria-label="서촌 픽셀 지도" />
+  return (
+    <>
+      <canvas ref={ref} className="pixel-canvas" aria-label="서촌 픽셀 지도" />
+      <div ref={bubble} className="shop-bubble" hidden aria-live="polite">
+        <b /> <i /> <em />
+      </div>
+    </>
+  )
 }

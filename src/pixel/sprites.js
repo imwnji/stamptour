@@ -3,6 +3,7 @@
 import { C, shade } from './colors.js'
 import { sprite, mirror, withScale } from './draw.js'
 import { shopIcon } from './shopIcons.js'
+import { OUTLINE } from './design.js'
 
 export const SHOP_K = 1.5 // 가게 크기 배율 (stores.js layoutStores 의 shopScale 과 같게)
 
@@ -432,7 +433,7 @@ export function pineSprite(size = 1) {
     pineTier(P, cx, Math.round(h * 0.42), Math.round(h * 0.42), w)
     pineTier(P, cx, Math.round(h * 0.2), Math.round(h * 0.36), Math.round(w * 0.78))
     pineTier(P, cx, 0, Math.round(h * 0.32), Math.round(w * 0.55))
-  })
+  }, { outline: OUTLINE.background })
 }
 
 export function roundTreeSprite(v = 0) {
@@ -446,7 +447,7 @@ export function roundTreeSprite(v = 0) {
     P.ellipse(13, 9, 10, 5.6, C.snow)
     P.ellipse(6, 12, 3.6, 2.4, C.snow); P.ellipse(21, 11, 4, 2.6, C.snow)
     P.ellipse(10, 7, 5, 2, C.snowHi)
-  })
+  }, { outline: OUTLINE.background })
 }
 
 export function bushSprite(berries = true) {
@@ -457,7 +458,7 @@ export function bushSprite(berries = true) {
     P.ellipse(8, 4, 6.5, 2.8, C.snowMid)
     P.ellipse(7.5, 3.4, 6, 2.5, C.snow)
     if (berries) { P.px(4, 8, C.roof); P.px(11, 7, C.roof); P.px(8, 9, C.roof); P.px(11, 6, C.roofLight) }
-  })
+  }, { outline: OUTLINE.background })
 }
 
 export function rockSprite() {
@@ -465,7 +466,7 @@ export function rockSprite() {
     P.ellipse(7, 5.5, 7, 3.8, C.stone)
     P.ellipse(8.5, 6.8, 5.5, 2.2, C.stoneDark)
     P.ellipse(6, 3.4, 5, 2.2, C.snow)
-  })
+  }, { outline: OUTLINE.background })
 }
 
 export function snowmanSprite(v = 0) {
@@ -481,7 +482,7 @@ export function snowmanSprite(v = 0) {
       for (let x = 4; x < 12; x += 2) P.px(x, 4, C.sky)
     } else { P.rect(4, 2, 7, 3, C.iron); P.rect(3, 4, 9, 1, C.iron); P.rect(4, 3, 7, 1, C.roof) }
     P.px(1, 14, C.woodDark); P.px(2, 15, C.woodDark); P.px(0, 13, C.woodDark); P.px(14, 14, C.woodDark); P.px(13, 15, C.woodDark); P.px(15, 13, C.woodDark)
-  })
+  }, { outline: OUTLINE.decor })
 }
 
 // ── 축제 길가 소품 ──
@@ -507,7 +508,7 @@ export function festiveLampSprite(banner = false) {
       P.rect(cx, cy - 3, 1, 7, C.snowHi); P.rect(cx - 3, cy, 7, 1, C.snowHi)
       P.px(cx - 2, cy - 2, C.snowHi); P.px(cx + 2, cy - 2, C.snowHi); P.px(cx - 2, cy + 2, C.snowHi); P.px(cx + 2, cy + 2, C.snowHi)
     }
-  }, { ax: 5 })
+  }, { ax: 5, outline: OUTLINE.decor })
 }
 
 // 기둥 두 개 사이 늘어진 줄 + 전구
@@ -524,7 +525,7 @@ export function stringLightsSprite() {
       if ((x - 5) % 6 === 3) { P.rect(x - 1, y + 1, 3, 3, C.glow); P.px(x - 1, y + 1, C.glowLight); P.px(x, y + 4, C.glowDark) }
       else if (x % 3 === 0) P.px(x, y - 1, C.snow)
     }
-  })
+  }, { outline: OUTLINE.decor })
 }
 
 // 지팡이 사탕을 꽂은 나무 화분
@@ -539,7 +540,7 @@ export function planterSprite() {
     P.rect(1, 10, 18, 7, C.wood); P.rect(1, 10, 18, 1, C.woodLight); P.rect(1, 13, 18, 1, C.woodDark); P.rect(1, 16, 18, 1, C.woodDark)
     P.rect(1, 10, 1, 7, C.woodDark); P.rect(18, 10, 1, 7, C.woodDark)
     P.rect(0, 9, 20, 2, C.snow); P.rect(2, 9, 8, 1, C.snowHi)
-  })
+  }, { outline: OUTLINE.decor })
 }
 
 // 커피잔 그림이 있는 나무 그루터기 + 작은 등불
@@ -553,7 +554,7 @@ export function stumpSprite() {
     // 작은 등불
     P.rect(20, 16, 5, 2, C.iron); P.rect(20, 10, 5, 6, C.iron); P.rect(21, 11, 3, 4, C.glow); P.px(21, 11, C.glowLight)
     P.rect(19, 9, 7, 1, C.iron); P.rect(21, 8, 3, 1, C.iron); P.rect(20, 7, 5, 1, C.snow)
-  })
+  }, { outline: OUTLINE.decor })
 }
 
 // 커피잔 간판
@@ -564,7 +565,7 @@ export function cafeSignSprite() {
     P.rect(5, 6, 5, 4, C.woodDark); P.px(10, 7, C.woodDark); P.px(10, 8, C.woodDark); P.rect(4, 10, 7, 1, C.woodDark)
     P.px(6, 4, C.woodDark); P.px(8, 5, C.woodDark)
     P.rect(1, 1, 14, 1, C.snow); P.rect(3, 0, 8, 1, C.snowHi)
-  })
+  }, { outline: OUTLINE.decor })
 }
 
 // 앉아 있는 고양이 (털 색 여러 가지)
@@ -584,7 +585,7 @@ export function catSprite(coat = C.woodLight, dark = C.woodDark, belly = C.paper
     P.px(4, 4, C.ink); P.px(7, 4, C.ink); P.px(5, 5, C.roofLight); P.px(6, 6, dark)
     // 앞발
     P.rect(3, 12, 2, 1, belly); P.rect(7, 12, 2, 1, belly)
-  })
+  }, { outline: OUTLINE.decor })
 }
 
 // 하얀 토끼
@@ -595,7 +596,7 @@ export function bunnySprite() {
     P.rect(2, 0, 2, 4, C.snowHi); P.rect(5, 0, 2, 4, C.snowHi); P.px(2, 1, C.roofLight); P.px(5, 1, C.roofLight); P.px(2, 2, C.roofLight); P.px(5, 2, C.roofLight)
     P.px(3, 5, C.ink); P.px(1, 6, C.roofLight); P.px(9, 7, C.snowMid)
     P.rect(3, 10, 2, 1, C.snowMid); P.rect(7, 10, 2, 1, C.snowMid)
-  })
+  }, { outline: OUTLINE.decor })
 }
 
 export function lampSprite() {
@@ -607,7 +608,7 @@ export function lampSprite() {
     P.rect(4, 4, 1, 6, C.iron)
     P.rect(0, 2, 10, 1, C.iron)
     P.rect(1, 0, 8, 2, C.snow)
-  })
+  }, { outline: OUTLINE.decor })
 }
 
 export function benchSprite() {
@@ -618,7 +619,7 @@ export function benchSprite() {
     P.rect(0, 8, 26, 2, C.wood); P.rect(0, 8, 26, 1, C.woodLight)
     P.rect(1, 7, 24, 1, C.snow); P.ellipse(8, 7, 4, 1.2, C.snow); P.ellipse(18, 7, 5, 1.2, C.snow)
     P.rect(1, 1, 24, 1, C.snow)
-  })
+  }, { outline: OUTLINE.decor })
 }
 
 // 광장 가운데 크리스마스 트리
@@ -636,7 +637,7 @@ export function plazaTreeSprite() {
       { P.px(x, y, c); P.px(x, y + 1, shade(c, 0.8)) }
     // 별
     P.rect(21, 0, 2, 6, C.glow); P.rect(19, 2, 6, 2, C.glow); P.px(21, 1, C.glowLight); P.px(22, 2, C.glowLight)
-  })
+  }, { outline: OUTLINE.decor })
 }
 
 export function signpostSprite() {
@@ -647,7 +648,72 @@ export function signpostSprite() {
     P.rect(4, 8, 9, 1, C.woodDark); P.rect(8, 14, 9, 1, C.woodLight)
     P.rect(2, 5, 15, 1, C.snow); P.rect(5, 12, 15, 1, C.snow); P.rect(8, 3, 5, 2, C.snow)
     P.ellipse(10.5, 27, 6, 1.6, C.snow)
-  })
+  }, { outline: OUTLINE.decor })
+}
+
+// ── 공간 연출용 작은 소품 (홀리데이 포인트·눈밭 변화) ──
+// 눈 쌓인 나무 울타리 (기둥 3개 + 가로대 2줄)
+export function fenceSprite() {
+  return sprite(30, 15, (P) => {
+    for (const x of [1, 13, 25]) {
+      P.rect(x, 3, 3, 12, C.woodDark); P.rect(x, 3, 1, 12, C.wood)
+      P.rect(x - 1, 1, 5, 2, C.snow); P.rect(x, 0, 3, 1, C.snowHi)
+    }
+    for (const y of [6, 10]) { P.rect(0, y, 30, 2, C.wood); P.rect(0, y, 30, 1, C.woodLight) }
+    P.rect(4, 5, 9, 1, C.snow); P.rect(16, 5, 9, 1, C.snow); P.rect(6, 9, 6, 1, C.snow); P.rect(18, 9, 5, 1, C.snow)
+    P.ellipse(15, 14.4, 15, 1.4, C.snow)
+  }, { outline: OUTLINE.decor })
+}
+// 리본 묶은 작은 선물 상자
+export function giftSprite(col = C.roof, ribbon = C.snowHi) {
+  return sprite(11, 11, (P) => {
+    P.rect(1, 4, 9, 7, col); P.rect(1, 4, 9, 1, shade(col, 1.25)); P.rect(8, 5, 2, 6, shade(col, 0.82))
+    P.rect(5, 4, 1, 7, ribbon); P.rect(1, 7, 9, 1, ribbon)
+    P.px(3, 2, ribbon); P.px(4, 3, ribbon); P.px(6, 3, ribbon); P.px(7, 2, ribbon); P.px(2, 2, ribbon); P.px(8, 2, ribbon)
+    P.rect(1, 3, 9, 1, C.snow)
+  }, { outline: OUTLINE.decor })
+}
+// 빨간 리본 단 작은 침엽수 (홀리데이 포인트)
+export function ribbonPineSprite() {
+  const w = 20, h = 31
+  return sprite(w, h, (P) => {
+    const cx = 10
+    P.rect(cx - 1, h - 6, 3, 6, C.woodDark)
+    pineTier(P, cx, 13, 13, w)
+    pineTier(P, cx, 5, 11, 15)
+    pineTier(P, cx, 0, 8, 10)
+    // 리본 (꼭대기 아래)
+    P.rect(cx - 3, 9, 3, 2, C.roof); P.rect(cx + 1, 9, 3, 2, C.roof); P.rect(cx, 9, 1, 2, C.roofDark)
+    P.px(cx - 1, 11, C.roof); P.px(cx - 2, 12, C.roofDark); P.px(cx + 1, 11, C.roof); P.px(cx + 2, 12, C.roofDark)
+    // 작은 방울 두 개
+    P.px(cx - 4, 18, C.glow); P.px(cx + 4, 21, C.roof)
+  }, { outline: OUTLINE.background })
+}
+// 눈에 반쯤 묻힌 바위
+export function buriedRockSprite(v = 0) {
+  return sprite(16, 9, (P) => {
+    P.ellipse(8, 6, 7, 3.6, C.stone)
+    P.ellipse(9.5, 7, 5, 2, C.stoneDark)
+    P.ellipse(7, 3.6, 5.5, 2.4, C.snow); P.rect(4, 2, 4, 1, C.snowHi)
+    P.ellipse(v ? 3 : 13, 7.6, 4, 1.6, C.snow) // 옆에 쌓인 눈
+    P.ellipse(8, 8.4, 8, 0.8, C.snow)
+  }, { outline: OUTLINE.background })
+}
+// 건물 발치 눈더미 (가게마다 다른 모양: w 폭, seed)
+export function driftSprite(w, seed) {
+  const h = 7
+  return sprite(w, h, (P) => {
+    let s = seed
+    const r = () => ((s = (s * 16807) % 2147483647) / 2147483647)
+    const n = 2 + Math.floor(r() * 2)
+    for (let k = 0; k < n; k++) {
+      const cx = w * (0.25 + 0.5 * (k / Math.max(1, n - 1))) + (r() - 0.5) * 2
+      const rx = w * (0.22 + r() * 0.12), ry = 2.2 + r() * 1.6
+      P.ellipse(cx, h - ry + 0.6, rx, ry, C.snowMid)
+      P.ellipse(cx - 0.6, h - ry + 0.1, rx - 0.6, ry - 0.5, C.snow)
+    }
+    P.rect(Math.round(w * 0.3), Math.max(1, h - 5), Math.max(2, Math.round(w * 0.22)), 1, C.snowHi)
+  }, { outline: OUTLINE.background * 0.6 })
 }
 
 // ── 아바타: 주홍 니트 모자 + 남색 더플코트 + 겨자색 목도리 여행자 (아래·위·왼쪽·오른쪽, 걷기 3프레임 + 손 흔들기) ──

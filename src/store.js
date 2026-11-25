@@ -21,14 +21,21 @@ export const useApp = create((set, get) => ({
   complete: false, // 완성 페이지
   paperMap: false, // 종이 지도 (매장 한눈에 보고 바로 이동)
   freshStamp: null, // 방금 찍힌 매장 (저널 반짝임)
+  seenStamps: [], // 저널에서 확인한 도장 (저널 버튼 배지 = 아직 안 본 새 도장 수)
   postcard: null, // { storeId, t } 건물 엽서 부착 연출
   toast: null,
+  // 첫 안내 쪽지를 봤는지 (가게를 한 번 누르면 true, 이번 접속(탭) 동안 유지)
+  hintSeen: (() => { try { return sessionStorage.getItem('hintSeen') === '1' } catch { return false } })(),
 
   async init() {
     const list = await db.loadAll()
     // 매장 목록이 바뀌어 없어진 매장의 옛 기록은 무시
     const stamps = Object.fromEntries(list.filter((r) => STORE_BY_ID[r.storeId]).map((r) => [r.storeId, r]))
-    set({ stamps, loaded: true })
+    // 저널에서 이미 본 도장 (처음이면 지금 있는 도장은 모두 본 것으로)
+    let seen = null
+    try { seen = JSON.parse(localStorage.getItem('seenStamps') || 'null') } catch {}
+    if (!Array.isArray(seen)) seen = Object.keys(stamps)
+    set({ stamps, loaded: true, seenStamps: seen })
   },
 
   setPhase: (phase) => set({ phase }),
@@ -36,6 +43,10 @@ export const useApp = create((set, get) => ({
   tapStore(storeId) {
     const s = get()
     if (s.walkTarget || s.phase !== 'map' || s.activeStore) return
+    if (!s.hintSeen) {
+      try { sessionStorage.setItem('hintSeen', '1') } catch {}
+      set({ hintSeen: true })
+    }
     if (s.avatarNode === 'f_' + storeId) {
       set({ activeStore: storeId })
     } else {
@@ -74,7 +85,9 @@ export const useApp = create((set, get) => ({
   openJournal() {
     const s = get()
     const done = Object.keys(s.stamps).length === STORES.length
-    set({ journal: 'open', journalPage: null, complete: false, _autoComplete: done })
+    const seenStamps = Object.keys(s.stamps) // 저널을 펼치면 새 도장을 확인한 것
+    try { localStorage.setItem('seenStamps', JSON.stringify(seenStamps)) } catch {}
+    set({ journal: 'open', journalPage: null, complete: false, _autoComplete: done, seenStamps })
   },
   closeJournal: () => set({ journal: null, journalPage: null, complete: false, freshStamp: null }),
   setJournalPage: (journalPage) => set({ journalPage }),

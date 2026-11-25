@@ -242,6 +242,14 @@ function drawIcon(paint) {
   return cv
 }
 
+// 그림마다 실제 출입문 가운데 위치 (그림 폭 대비 0~1) — 문 앞 눈길이 진짜 문에서 시작하게
+const DOOR_X = {
+  'tote-bag-house': 0.68, 'hanok-cafe-house': 0.6, 'denim-jacket-house': 0.66, 'cat-face-house': 0.43, 'llama-house': 0.47,
+  'planner-notebook-house': 0.82, 'bread-house': 0.42, 'two-tone-cup': 0.53, 'folding-screen-teapot': 0.4,
+  'scone-house': 0.36, 'curry-jar-house': 0.45, 'strawberry-cake-house': 0.22, 'chicken-bag-house': 0.4,
+  'dumpling-bowl': 0.62, 'record-shop-house': 0.43, 'dripper-house': 0.45,
+}
+
 let ICONS = {}
 // 이미지 파일을 모두 불러온 뒤 스프라이트로 (buildWorld 전에 한 번)
 export async function loadShopIcons() {
@@ -249,7 +257,7 @@ export async function loadShopIcons() {
   const imgs = await Promise.all(Object.entries(URLS).map(async ([id, url]) => [id, await load(url)]))
   ICONS = {}
   for (const [id, paint] of Object.entries(DRAWN)) ICONS[id] = toSprite(drawIcon(paint))
-  for (const [id, im] of imgs) if (im) ICONS[id] = im.naturalWidth > 128 ? toHiresSprite(im) : toSprite(im)
+  for (const [id, im] of imgs) if (im) ICONS[id] = { ...(im.naturalWidth > 128 ? toHiresSprite(im) : toSprite(im)), doorX: DOOR_X[id] ?? 0.5 }
   return ICONS
 }
 export const shopIcon = (name) => (name ? ICONS[name] : undefined)

@@ -5,17 +5,18 @@
    도트 테두리는 src/pixel-frames.css (scripts/build-pixel-frames.mjs 로 생성)
    ───────────────────────────────────────────────────────────── */
 :root {
-  --paper: #F7F2E8;
-  --paper-2: #ECE4D5;
-  --card: #FFFCF5;
-  --ink: #272A40;
-  --ink-2: #4A4E68;
-  --ink-3: #8D8B98;
-  --red: #D14B35;
-  --red-d: #A5372A;
+  --paper: #F8F6F0;
+  --paper-2: #ECE7DE;
+  --card: #FFFDF9;
+  --ink: #30354A; /* 잉크 네이비 */
+  --ink-2: #4F5469;
+  --ink-3: #8E8E9A;
+  --red: #B94D3B; /* 홀리데이 레드 */
+  --red-d: #963C2D;
   --pine: #3B6655;
   --amber: #F4B860;
-  --sky: #AFC3DA;
+  --sky: #8FAFC8; /* 윈터 블루 */
+  --light: #E9D6A8; /* 따뜻한 조명 */
   --navy: #43507A;
   --rule: rgba(95, 125, 170, .26);
   --margin: rgba(209, 75, 53, .42);
@@ -27,7 +28,10 @@
   --noise: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 .45  0 0 0 0 .38  0 0 0 0 .28  0 0 0 .08 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
   /* 일기장 도트 그리드 — 지도 바닥과 같은 2x2 점, 16px 간격 */
   --grid: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' shape-rendering='crispEdges'><rect x='7' y='7' width='2' height='2' fill='%23CBD2DC'/></svg>");
-  --shadow: 3px 3px 0 rgba(39, 42, 64, .28);
+  --shadow: 3px 3px 0 rgba(48, 53, 74, .24);
+  --shadow-soft: 2px 2px 0 rgba(48, 53, 74, .14); /* 지도 위 UI: 그림자 작고 옅게 */
+  --hud-h: 46px; /* 머리말 높이 (제목·도장 카운터·저널 버튼 공통) */
+  --fab: 46px; /* 지도 버튼 (터치 영역 44px 이상) */
   --safe-t: env(safe-area-inset-top, 0px);
   --safe-b: env(safe-area-inset-bottom, 0px);
 }
@@ -118,49 +122,78 @@ button { font: inherit; color: inherit; border: 0; background: none; cursor: poi
   100% { opacity: 0; transform: translate(-50%, -10px) rotate(-1.5deg); }
 }
 
-/* ── HUD: 일기장 머리말 ── */
+/* ── HUD: 일기장 머리말 ──
+   지도 위에 떠 있는 UI 는 얇은 1px 도트 테두리(같은 무늬를 1배로) + 작은 그림자 → 지도를 덜 가리고 가게가 먼저 보이게 */
 .hud {
   position: absolute; left: 0; right: 0; top: 0; z-index: 5; display: flex; align-items: stretch; gap: 6px;
-  padding: calc(12px + var(--safe-t)) 10px 10px; pointer-events: none;
+  padding: calc(8px + var(--safe-t)) 8px 8px; pointer-events: none;
   opacity: 0; transform: translateY(-14px); transition: .5s ease;
 }
 .hud.on { opacity: 1; transform: none; }
-.hud > * { pointer-events: auto; }
-.brand { position: relative; display: flex; flex-direction: column; justify-content: center; gap: 1px; margin-right: auto; min-width: 0; padding: 2px 6px 0; }
-.brand-tape { width: 34px; height: 14px; left: -8px; top: -9px; margin: 0; transform: rotate(-24deg); }
-.brand-en { font-size: 12px; font-weight: 700; letter-spacing: 0; color: var(--red); white-space: nowrap; }
-.brand b { font-size: 14px; font-weight: 400; color: var(--ink); line-height: 1.05; white-space: nowrap; }
-.weather { display: inline-block; width: 16px; height: 15px; margin-left: 3px; vertical-align: -2px; fill: #6FA0D0; }
-.progress { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; padding: 0 4px; color: var(--ink); }
+.hud > * { pointer-events: auto; height: var(--hud-h); }
+.hud > :is(.brand, .progress, .journal-btn), .map-fab, .hint {
+  border-width: 3px; border-image-width: 3px; filter: drop-shadow(var(--shadow-soft));
+}
+.brand { position: relative; display: flex; flex-direction: column; justify-content: center; gap: 2px; margin-right: auto; min-width: 0; padding: 0 8px; }
+.brand-tape { width: 26px; height: 10px; left: -6px; top: -6px; margin: 0; transform: rotate(-24deg); }
+.brand-en { font-size: 12px; font-weight: 700; letter-spacing: 0; color: var(--red); white-space: nowrap; line-height: 1; }
+.brand b { font-size: 14px; font-weight: 400; color: var(--ink); line-height: 1; white-space: nowrap; }
+.weather { display: inline-block; width: 16px; height: 15px; margin-left: 3px; vertical-align: -2px; fill: var(--sky); }
+.progress { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; padding: 0 6px; color: var(--ink); }
 .progress-n { font-size: 12px; line-height: 1; color: var(--ink-3); }
 .progress-n b { font-size: 18px; color: var(--ink); }
 .dots { display: grid; grid-template-columns: repeat(9, 6px); gap: 2px; }
-.dots i { width: 6px; height: 6px; box-shadow: inset 0 0 0 1px #C9C1B2; }
+.dots i { width: 6px; height: 6px; box-shadow: inset 0 0 0 1px #D2CCC1; }
 .dots i.on { box-shadow: none; }
-.journal-btn { position: relative; width: 50px; display: grid; place-items: center; }
+.journal-btn { position: relative; width: var(--hud-h); display: grid; place-items: center; }
 .journal-btn svg { image-rendering: pixelated; }
 .journal-btn em {
-  position: absolute; top: -10px; right: -10px; min-width: 22px; height: 22px; padding: 0 3px; display: grid; place-items: center;
+  position: absolute; top: -7px; right: -7px; min-width: 18px; height: 18px; padding: 0 3px; display: grid; place-items: center;
   background: var(--red); color: #fff; font: 700 12px/1 var(--pixel); font-style: normal;
-  border-radius: 50%; box-shadow: 0 0 0 2px var(--card), 0 0 0 4px var(--red); transform: rotate(-8deg);
+  box-shadow: 0 0 0 1px var(--card), 0 0 0 2px var(--red);
+}
+@media (max-width: 340px) { /* 320px 화면: 도장 점을 6줄로 접어 제목 자리 확보 */
+  .brand { padding: 0 4px; }
+  .progress { gap: 2px; padding: 0 4px; }
+  .dots { grid-template-columns: repeat(6, 5px); gap: 2px; }
+  .dots i { width: 5px; height: 5px; }
 }
 
-/* 지도 위 메모 쪽지 (안내) */
+/* 지도 위 메모 쪽지 (안내) — 처음에만, 가게를 한 번 누르면 사라짐 */
 .hint {
-  position: absolute; left: 50%; bottom: calc(26px + var(--safe-b)); z-index: 4; max-width: calc(100% - 32px);
-  transform: translateX(-50%) rotate(-1deg); padding: 4px 16px 2px; pointer-events: none;
-  animation: memoBob 2.4s steps(2) infinite;
+  position: absolute; left: 50%; bottom: calc(24px + var(--safe-b)); z-index: 4; max-width: calc(100% - 32px);
+  transform: translateX(-50%) rotate(-1deg); padding: 2px 12px 0; pointer-events: none;
+  animation: hintIn .4s ease;
 }
-.hint .tape { width: 40px; height: 14px; top: -10px; left: 12px; margin: 0; }
-.hint .hand { display: block; font-size: 14px; line-height: 1.6; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-@keyframes memoBob { 50% { transform: translate(-50%, -3px) rotate(-1deg); } }
+.hint .tape { width: 30px; height: 10px; top: -7px; left: 10px; margin: 0; }
+.hint .hand { display: block; font-size: 14px; line-height: 1.5; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+@keyframes hintIn { from { opacity: 0; transform: translate(-50%, 6px) rotate(-1deg); } }
 
+/* 실제 지도(종이 지도) 버튼: 아이콘 + 작은 글씨, 높이 46px (터치 44px 이상) */
 .map-fab {
-  position: absolute; right: 12px; bottom: calc(92px + var(--safe-b)); z-index: 5; width: 62px; height: 66px;
-  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; color: var(--ink);
+  position: absolute; right: 10px; bottom: calc(64px + var(--safe-b)); z-index: 5; height: var(--fab);
+  display: flex; align-items: center; gap: 4px; padding: 0 8px 0 4px; color: var(--ink);
   animation: popIn .35s cubic-bezier(.2,1.4,.4,1);
 }
-.map-fab span { font-size: 12px; font-weight: 700; line-height: 1; }
+.map-fab svg { width: 32px; height: 32px; image-rendering: pixelated; flex: none; }
+.map-fab span { font-size: 12px; font-weight: 700; line-height: 1; white-space: nowrap; }
+
+/* 가게 말풍선: 누른 가게 위에 이름 · 종류 · 도장 여부 (걸어가는 동안) */
+.shop-bubble {
+  position: absolute; left: 0; top: 0; z-index: 3; pointer-events: none; will-change: transform;
+  display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 3px 8px 2px; white-space: nowrap;
+  border: 3px solid transparent; border-image: var(--px-card) 3 fill / 3px stretch; filter: drop-shadow(var(--shadow-soft));
+}
+.shop-bubble[hidden] { display: none; }
+.shop-bubble::after { /* 말꼬리 (도트) */
+  content: ''; position: absolute; left: 50%; bottom: -9px; width: 6px; height: 6px; margin-left: -3px;
+  background: var(--card); box-shadow: 0 1px 0 var(--ink), -1px 0 0 var(--ink), 1px 0 0 var(--ink);
+}
+.shop-bubble b { font-size: 12px; font-weight: 700; color: var(--ink); line-height: 1.2; }
+.shop-bubble i { font-style: normal; font-size: 12px; color: var(--ink-3); line-height: 1.2; }
+.shop-bubble em { font-style: normal; font-size: 12px; line-height: 1.2; color: var(--ink-3); }
+.shop-bubble em.done { color: var(--red); }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 
 .toast {
   position: absolute; left: 50%; top: calc(86px + var(--safe-t)); transform: translateX(-50%); z-index: 60;
@@ -168,7 +201,7 @@ button { font: inherit; color: inherit; border: 0; background: none; cursor: poi
 }
 @keyframes toast { 0% { opacity: 0; transform: translate(-50%, -8px); } 10%, 85% { opacity: 1; transform: translate(-50%, 0); } 100% { opacity: 0; } }
 
-.osm-credit { position: absolute; left: 8px; bottom: calc(4px + var(--safe-b)); z-index: 4; font-size: 12px; color: rgba(39, 42, 64, .5); pointer-events: none; }
+.osm-credit { position: absolute; left: 8px; bottom: calc(4px + var(--safe-b)); z-index: 4; font-size: 12px; color: rgba(48, 53, 74, .6); pointer-events: none; }
 
 /* ── 버튼 ── */
 .btn, .primary {

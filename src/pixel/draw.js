@@ -104,6 +104,7 @@ export function scaledPainter(c, k) {
 }
 
 // 스프라이트 만들기: paint(P) 로 그린 뒤 외곽선. 기준점 = 아래 가운데 (바닥에 닿는 곳)
+//  outline: true(보통) | false(없음) | 0~1 숫자(외곽선 진하기 — 나무처럼 배경으로 물러날 것은 옅게)
 //  scale: 배율 (가게처럼 크게 다시 그릴 때, withScale 로 지정)
 let SCALE = 1
 export function sprite(w, h, paint, { outline = true, ax, ay, scale = SCALE } = {}) {
@@ -112,7 +113,7 @@ export function sprite(w, h, paint, { outline = true, ax, ay, scale = SCALE } = 
   const c = cv.getContext('2d')
   c.translate(1, 1)
   paint(scaledPainter(c, scale))
-  if (outline) autoOutline(cv)
+  if (outline) autoOutline(cv, typeof outline === 'number' ? outline : 0.5) // 숫자면 외곽선 진하기 (배경 소품은 옅게)
   return { cv, w: W + 2, h: H + 2, ax: ax !== undefined ? Math.round(ax * scale) + 1 : Math.floor((W + 2) / 2), ay: ay !== undefined ? Math.round(ay * scale) + 1 : H + 1 }
 }
 // fn 안에서 만드는 스프라이트를 모두 배율 k 로

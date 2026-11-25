@@ -25,11 +25,12 @@ React 18 + Vite 5, Canvas2D(도트 렌더), zustand, IndexedDB.
 - `src/data/layout.js` — 위경도→칸 균일 변환(1칸=5m), 길 정리(`tidyStreets`: 짧은 막다른 가지·나란히 붙은 막다른 길 제거), 골목 직선화(`straight`), 매장은 실제 위경도에 문이 오도록 배치(`realPos`: 그림·길과 안 겹치는 가장 가까운 자리, 정면은 모두 남쪽, `shopScale` 1.5), 길 그래프 생성.
 - `src/data/map.js` — layout 결과(NODES/EDGES/STREETS/BG_STREETS, MAP_W·MAP_H 자동) + 다익스트라 `findPath`, `distToStreets`. 출발 노드 `S`, 북쪽 끝 `PLAZA`.
 - `src/pixel/` — 도트 마을 (Canvas2D, 정수 배율, 1칸=16px).
-  - `palette.js`(겨울 팔레트 8색) · `colors.js`(명암 단계) · `draw.js`(도트 도구, 자동 외곽선, `withScale` 다시 그리기 배율)
-  - `shopIcons.js` — 가게 아이콘 = "파는 물건 모양의 집". 그림 파일 `src/assets/shops/<이름>.png|webp` 는 **손대지 않고 그대로** 씀: 64px 이하 도트는 정수 2배, 큰 원본(webp 등)은 투명 테두리만 잘라 원본 11.25px = 지도 1px 로 부드럽게 축소(미리 줄인 단계 mips). 코드 그림 6종(moka-pot 등)은 예비. 가게에 붙이려면 stores.js 에 `icon: '<이름>'`.
+  - `design.js` — **지도 디자인 설정 한곳**: 나무 군집(목표 수·간격·숲/빈터)·소품 장면 수·길 폭/돌바닥 비율·실제 지도 골목 진하기·불빛·눈·그림자·외곽선 진하기, `MAP_SEED`. 원칙: 가게가 주인공, 여백은 디자인의 일부.
+  - `palette.js`(눈밭 #F5F4EF·길 #E4E0D7·그늘 #D3DEE3·솔 #668477 등) · `colors.js`(명암 단계) · `draw.js`(도트 도구, 자동 외곽선(진하기 지정 가능), `withScale` 다시 그리기 배율)
+  - `shopIcons.js` — (그림별 실제 출입문 위치 `DOOR_X`) 가게 아이콘 = "파는 물건 모양의 집". 그림 파일 `src/assets/shops/<이름>.png|webp` 는 **손대지 않고 그대로** 씀: 64px 이하 도트는 정수 2배, 큰 원본(webp 등)은 투명 테두리만 잘라 원본 11.25px = 지도 1px 로 부드럽게 축소(미리 줄인 단계 mips). 코드 그림 6종(moka-pot 등)은 예비. 가게에 붙이려면 stores.js 에 `icon: '<이름>'`.
   - `sprites.js` — 나무·소품·동물·아바타 전부 코드로. 예전 가게 그림(고유 모양 6종 + 공통)은 아이콘이 없을 때만 쓰는 예비. `SHOP_K`=1.5 (stores.js `shopScale` 과 같게)
-  - `world.js` — 바닥(눈·판석 돌길·광장·디딤돌·불빛·발자국) + 물체 배치(가로등·길가 소품·숲·동물, 가게 둘레는 비움)
-  - `PixelMap.jsx` — 카메라 추적·드래그·핀치/휠 확대, 탭→걷기, 텔레포트, 엽서, 눈송이, 인트로
+  - `world.js` — 바닥: 무늬 없는 맑은 눈밭 + 같은 폭(ROAD.half)의 판석 돌길(눈은 가장자리 1~3도트만, 드문 눈 뭉치) + 가게 연결로(그림의 실제 문 위치 `doorX` → 길) + 얼음 연못. 실제 지도의 나머지 골목은 그림 지도에선 숨김. 물체: 나무 = 포아송 군집 중심 × 삼각형·비대칭 구도(CLUSTERS), 숲/빈터(빈터도 옅게), 발치 관목·눈더미 / 눈더미는 나무 밑·울타리·길 가장자리·가게 발치에만 / 테마 공간은 `design.js SPACES.anchors` 의 직접 고른 좌표(크리스마스 광장·휴식·정원·얼음 연못, variant 로 구성 다르게) / 길가 장면(카페·식당·소품샵·산책길). `CONTENT` = 카메라 이동 범위
+  - `PixelMap.jsx` — 카메라 추적·드래그·핀치/휠 확대, 탭→걷기, 텔레포트, 엽서, 눈송이, 인트로 · 첫 화면은 출발점+가까운 가게들이 보이게 맞춤, 축소하면 작은 장식(detail) 숨김, 누른 가게 위 말풍선(이름·종류·도장 여부)
 - `src/ui/` — Hud(일기장 머리말: 날짜 라벨·도장 카드·메모 쪽지, 지도 버튼 포함), PaperMap(종이 지도: 번호 핀+목록→`goToStore`), StoreSheet, StampScreen, Journal(저널·일기장·완성 페이지).
 - `src/lib/` — db(IndexedDB, Firebase 전환 시 이 파일만), stampSvg(도장 문양 SVG), photo(사진 압축), shareImage(1080×1920 공유 이미지).
 - `src/store.js` — zustand 전역 상태 (phase, stamps, walkTarget, activeStore, journal, paperMap …).

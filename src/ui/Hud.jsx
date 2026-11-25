@@ -37,6 +37,16 @@ export default function Hud() {
   const openJournal = useApp((s) => s.openJournal)
   const openPaperMap = useApp((s) => s.openPaperMap)
   const count = Object.keys(stamps).length
+  const seenStamps = useApp((s) => s.seenStamps)
+  const unseen = Object.keys(stamps).filter((id) => !seenStamps.includes(id)).length // 새로 받았는데 아직 저널에서 안 본 도장
+  const hintSeen = useApp((s) => s.hintSeen)
+  const hintText = walkTarget
+    ? `${STORE_BY_ID[walkTarget].name}(으)로 걸어가는 중…`
+    : count === STORES.length
+      ? '도장 다 모았다! 저널을 펼쳐보자'
+      : !hintSeen
+        ? '눈 쌓인 가게를 톡! 눌러보세요'
+        : null
   const show = phase === 'map'
 
   return (
@@ -65,7 +75,7 @@ export default function Hud() {
             <path d="M10 0h2v5l-1-1-1 1z" fill="#D14B35" />
             <path d="M13 3h1v2h-1zM13 9h1v2h-1z" fill="#F4B860" />
           </svg>
-          {count > 0 && <em>{count}</em>}
+          {unseen > 0 && <em aria-label={`새 도장 ${unseen}개`}>{unseen}</em>}
         </button>
       </header>
       {/* 종이 지도 버튼 (걷는 중엔 숨김) */}
@@ -78,21 +88,14 @@ export default function Hud() {
             <path d="M8 9h2v2H8z" fill="#D14B35" />
             <path d="M0 3h1v11H0zM15 3h1v11h-1zM1 14h4v1H1zM6 13h4v1H6zM11 14h4v1h-4zM1 2h4v1H1zM6 1h4v1H6zM11 2h4v1h-4z" fill="#272A40" />
           </svg>
-          <span>지도</span>
+          <span>실제 지도</span>
         </button>
       )}
-      {show && !activeStore && (
-        <div className="hint">
+      {/* 안내 쪽지: 처음 들어왔을 때(가게를 한 번 누르면 이번 접속 동안 사라짐) · 걷는 중 · 도장을 다 모았을 때만 */}
+      {show && !activeStore && hintText && (
+        <div className="hint" key={hintText}>
           <span className="tape tape-blue" />
-          <span className="hand">
-            {walkTarget
-              ? `${STORE_BY_ID[walkTarget].name}(으)로 걸어가는 중…`
-              : count === 0
-                ? '눈 쌓인 가게를 톡! 눌러보세요'
-                : count === STORES.length
-                  ? '도장 다 모았다! 저널을 펼쳐보자'
-                  : `도장 ${STORES.length - count}개 남았다! 가게를 톡`}
-          </span>
+          <span className="hand">{hintText}</span>
         </div>
       )}
     </>

@@ -3,17 +3,17 @@
 //  CSS: border: 6px solid transparent; border-image: var(--px-paper) 3 fill / 6px stretch;
 import { writeFileSync } from 'node:fs'
 
-const INK = '#272A40'
+const INK = '#30354A'
 const FRAMES = {
-  paper: { o: INK, h: '#FFFDF8', f: '#F7F2E8', s: '#E2D8C6' },
-  card: { o: INK, h: '#FFFFFF', f: '#FFFCF5', s: '#EDE5D6' },
-  ink: { o: '#14162A', h: '#474C6E', f: INK, s: '#1A1C2E' },
-  red: { o: INK, h: '#EC8068', f: '#D14B35', s: '#A5372A' },
+  paper: { o: INK, h: '#FFFFFF', f: '#F8F6F0', s: '#E6E1D7' },
+  card: { o: INK, h: '#FFFFFF', f: '#FFFDF9', s: '#ECE7DE' },
+  ink: { o: '#1B1E2D', h: '#4E5572', f: INK, s: '#222638' },
+  red: { o: INK, h: '#D67563', f: '#B94D3B', s: '#963C2D' },
   pine: { o: INK, h: '#5E8D76', f: '#3B6655', s: '#2C5044' },
   amber: { o: INK, h: '#FCE2A8', f: '#F4B860', s: '#D48E35' },
   gray: { o: '#9A9286', h: '#E4DFD6', f: '#D3CDC2', s: '#B9B2A5' },
   // 메모지: 외곽선이 연한 종이 (지도 위 손글씨 쪽지)
-  memo: { o: '#B7AE9F', h: '#FFFFFF', f: '#FFFDF7', s: '#EFE8DA' },
+  memo: { o: '#BDB6AA', h: '#FFFFFF', f: '#FFFEFB', s: '#EFEBE3' },
 }
 const ROWS = [
   '..OOOO..',
